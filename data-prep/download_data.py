@@ -1,4 +1,4 @@
-# python data-prep/download_data.py --data_dir data --subset
+# python data-prep/download_data.py --data_dir fma-keys --subset
 
 import argparse
 from pathlib import Path
