@@ -4,16 +4,15 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32GB
 #SBATCH --time=02:00:00
-#SBATCH --output=%x-%j.log
-#SBATCH --error=%x-%j.log
+#SBATCH --output=allconv-predict.log
+#SBATCH --error=allconv-predict.log
 
 set -euo pipefail
 
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-REPO_ROOT=$(cd "${SCRIPT_DIR}/.." && pwd)
+REPO_ROOT=${SCRATCH}/llm-key-estimation
 
 IMAGE=/share/apps/images/cuda12.1.1-cudnn8.9.0-devel-ubuntu22.04.2.sif
-OVERLAY=conda-overlay.ext3:rw
+OVERLAY=${REPO_ROOT}/conda-overlay.ext3:rw
 
 DATA_DIR=${DATA_DIR:-fma-keys}
 OUTPUT=${OUTPUT:-baseline/allconv-predictions.csv}
