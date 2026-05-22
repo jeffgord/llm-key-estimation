@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=chord-predict
+#SBATCH --job-name=lvcr-predict
 #SBATCH --account=torch_pr_932_general
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=64GB
 #SBATCH --time=04:00:00
-#SBATCH --output=chord-predict.log
-#SBATCH --error=chord-predict.log
+#SBATCH --output=lvcr-predict.log
+#SBATCH --error=lvcr-predict.log
 
 set -euo pipefail
 
@@ -32,7 +32,7 @@ echo "Workers: ${NUM_WORKERS}"
 singularity exec --fakeroot --nv --overlay "${OVERLAY}" "${IMAGE}" /bin/bash -lc '
   cd "'"${REPO_ROOT}"'"
   source /ext3/env.sh
-  python chord-recognition/chord_predict.py \
+  python chord-recognition/lvcr_predict.py \
     --data-dir "${DATA_DIR}" \
     --output-dir "${OUTPUT_DIR}" \
     --num-workers "${NUM_WORKERS}"
