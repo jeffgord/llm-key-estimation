@@ -1,19 +1,3 @@
-# patches for old madmom
-import collections
-import collections.abc
-collections.MutableSequence = collections.abc.MutableSequence
-collections.MutableMapping = collections.abc.MutableMapping
-collections.Mapping = collections.abc.Mapping
-collections.Sequence = collections.abc.Sequence
-
-import numpy as np
-np.float = np.float64
-np.int = np.int_
-np.complex = np.complex128
-np.object = np.object_
-np.bool = np.bool_
-np.str = np.str_
-
 import csv
 import sys
 import argparse
@@ -22,7 +6,6 @@ import concurrent.futures
 from pathlib import Path
 from tqdm import tqdm
 import madmom
-import madmom.features.key
 
 _thread_local = threading.local()
 
