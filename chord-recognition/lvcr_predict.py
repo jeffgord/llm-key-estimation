@@ -59,7 +59,7 @@ def process_file(audio_path: Path, output_dir: Path) -> None:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run chord recognition on all audio files in a directory')
     parser.add_argument('--data-dir', type=Path, default=Path('fma-keys'), help='Directory containing audio files')
-    parser.add_argument('--output-dir', type=Path, default=Path('chords'), help='Output directory for .lab files')
+    parser.add_argument('--output-dir', type=Path, default=Path('chords/raw'), help='Output directory for .lab files')
     parser.add_argument('--num-workers', type=int, default=1, help='Number of worker threads')
     args = parser.parse_args()
 
