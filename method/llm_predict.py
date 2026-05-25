@@ -15,8 +15,7 @@ class GeminiKeyEstimator:
         api_keys = json.loads(os.getenv('GEMINI_API_KEYS'))
         self.clients = [genai.Client(api_key=api_key) for api_key in api_keys]
         self.config = types.GenerateContentConfig(
-            thinking_config=types.ThinkingConfig(thinking_budget=-1),
-            temperature=0.2,
+            thinking_config=types.ThinkingConfig(thinking_level="high"),
             response_mime_type="application/json",
             response_schema=types.Schema(
                 type=types.Type.OBJECT,
@@ -39,7 +38,7 @@ class GeminiKeyEstimator:
         for i in range(num_clients):
             try:
                 response = self.clients[i].models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-3.1-flash-lite",
                     contents=contents,
                     config=self.config,
                 )
