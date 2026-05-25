@@ -2,7 +2,6 @@ import argparse
 import csv
 import json
 import os
-import sys
 import time
 from pathlib import Path
 
@@ -40,7 +39,7 @@ class GeminiKeyEstimator:
             while True:
                 try:
                     response = self.clients[i].models.generate_content(
-                        model="gemini-3.1-flash-lite",
+                        model="gemini-3.5-flash",
                         contents=contents,
                         config=self.config,
                     )
