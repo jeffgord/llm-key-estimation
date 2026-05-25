@@ -3,6 +3,7 @@ import csv
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -36,17 +37,21 @@ class GeminiKeyEstimator:
         num_clients = len(self.clients)
 
         for i in range(num_clients):
-            try:
-                response = self.clients[i].models.generate_content(
-                    model="gemini-3.1-flash-lite",
-                    contents=contents,
-                    config=self.config,
-                )
-                return response.text
-            except errors.APIError as e:
-                if e.code == 429 and i < num_clients - 1:
-                    continue
-                raise
+            while True:
+                try:
+                    response = self.clients[i].models.generate_content(
+                        model="gemini-3.1-flash-lite",
+                        contents=contents,
+                        config=self.config,
+                    )
+                    return response.text
+                except errors.APIError as e:
+                    if e.code == 503:
+                        time.sleep(30)
+                        continue
+                    if e.code == 429 and i < num_clients - 1:
+                        break
+                    raise
 
 
 def parse_response(text: str) -> dict:
