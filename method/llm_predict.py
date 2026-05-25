@@ -90,13 +90,9 @@ def main():
             track_id = int(row['track_id'])
             chords = row['chords']
 
-            try:
-                parsed = parse_response(model.predict(chords))
-                key = parsed['key']
-                explanation = parsed['explanation']
-            except Exception as e:
-                tqdm.write(f"Error on track {track_id}: {e}", file=sys.stderr)
-                continue
+            parsed = parse_response(model.predict(chords))
+            key = parsed['key']
+            explanation = parsed['explanation']
 
             with open(args.output, 'a', newline='') as f:
                 csv.writer(f).writerow([track_id, key, explanation])
