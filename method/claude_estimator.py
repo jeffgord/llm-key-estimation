@@ -21,7 +21,7 @@ class ClaudeKeyEstimator:
         },
     }
 
-    MODEL = "claude-opus-4-7"
+    MODEL = "claude-sonnet-4-6"
 
     def __init__(self):
         load_dotenv()
