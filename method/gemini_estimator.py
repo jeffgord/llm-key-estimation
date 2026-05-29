@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types, errors
 
+from result import KeyEstimationResult
+
 
 class GeminiKeyEstimator:
     MODEL = "gemini-3.5-flash"
@@ -32,7 +34,7 @@ class GeminiKeyEstimator:
         with open(prompt_path, 'r', encoding='utf-8') as f:
             self.prompt = f.read()
 
-    def predict(self, chords: str) -> str:
+    def predict(self, chords: str) -> KeyEstimationResult:
         contents = self.prompt.replace("{CHORDS}", chords)
         num_clients = len(self.clients)
 
@@ -44,7 +46,8 @@ class GeminiKeyEstimator:
                         contents=contents,
                         config=self.config,
                     )
-                    return response.text
+                    data = json.loads(response.text)
+                    return KeyEstimationResult(key=data['key'], explanation=data['explanation'])
                 except errors.APIError as e:
                     if e.code == 503:
                         time.sleep(30)

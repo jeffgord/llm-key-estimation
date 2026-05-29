@@ -6,8 +6,12 @@ from pathlib import Path
 import anthropic
 from dotenv import load_dotenv
 
+from result import KeyEstimationResult
+
 
 class ClaudeKeyEstimator:
+    MODEL = "claude-sonnet-4-6"
+
     _TOOL = {
         "name": "report_key",
         "description": "Report the predicted musical key",
@@ -21,8 +25,6 @@ class ClaudeKeyEstimator:
         },
     }
 
-    MODEL = "claude-sonnet-4-6"
-
     def __init__(self):
         load_dotenv()
         self.client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
@@ -31,27 +33,37 @@ class ClaudeKeyEstimator:
         with open(prompt_path, 'r', encoding='utf-8') as f:
             self.prompt = f.read()
 
-    def predict(self, chords: str) -> str:
+    def predict(self, chords: str, retries: int = 3) -> KeyEstimationResult:
         contents = self.prompt.replace("{CHORDS}", chords)
 
-        while True:
-            try:
-                response = self.client.messages.create(
-                    model=self.MODEL,
-                    max_tokens=16000,
-                    thinking={"type": "enabled", "budget_tokens": 15000},
-                    tools=[self._TOOL],
-                    tool_choice={"type": "tool", "name": "report_key"},
-                    messages=[{"role": "user", "content": contents}],
-                )
-                break
-            except anthropic.APIStatusError as e:
-                if e.status_code == 529:
-                    time.sleep(30)
-                    continue
-                raise
+        last_exc: Exception = ValueError("No usable block in Claude response")
+        for _ in range(retries):
+            while True:
+                try:
+                    response = self.client.messages.create(
+                        model=self.MODEL,
+                        max_tokens=16000,
+                        thinking={"type": "enabled", "budget_tokens": 15000},
+                        tools=[self._TOOL],
+                        tool_choice={"type": "auto"},
+                        messages=[{"role": "user", "content": contents}],
+                    )
+                    break
+                except anthropic.APIStatusError as e:
+                    if e.status_code == 529:
+                        time.sleep(30)
+                        continue
+                    raise
 
-        for block in response.content:
-            if block.type == "tool_use" and block.name == "report_key":
-                return json.dumps(block.input)
-        raise ValueError("No tool_use block in Claude response")
+            for block in response.content:
+                if block.type == "tool_use" and block.name == "report_key":
+                    return KeyEstimationResult(key=block.input['key'], explanation=block.input['explanation'])
+            try:
+                for block in response.content:
+                    if block.type == "text":
+                        data = json.loads(block.text)
+                        return KeyEstimationResult(key=data['key'], explanation=data['explanation'])
+            except (json.JSONDecodeError, KeyError) as e:
+                last_exc = e
+
+        raise last_exc

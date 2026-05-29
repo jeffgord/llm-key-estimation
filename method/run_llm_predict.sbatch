@@ -15,9 +15,9 @@ IMAGE=/share/apps/images/cuda12.1.1-cudnn8.9.0-devel-ubuntu22.04.2.sif
 OVERLAY=${REPO_ROOT}/conda-overlay.ext3:rw
 
 CHORDS_CSV=${CHORDS_CSV:-chords/chords.csv}
-OUTPUT=${OUTPUT:-method/llm-predictions.csv}
-PROVIDER=${PROVIDER:-gemini}
-LIMIT=${LIMIT:--1}
+OUTPUT=${OUTPUT:-method/llm-predictions-claude.csv}
+PROVIDER=${PROVIDER:-claude}
+LIMIT=${LIMIT:-500}
 
 export CHORDS_CSV OUTPUT PROVIDER LIMIT
 
@@ -28,7 +28,7 @@ echo "Node(s): ${SLURM_NODELIST:-unknown}"
 echo "Working directory: $(pwd)"
 echo "Chords CSV: ${CHORDS_CSV}"
 echo "Output: ${OUTPUT}"
-echo "Model: ${PROVIDER}"
+echo "Provider: ${PROVIDER}"
 echo "Limit: ${LIMIT}"
 
 singularity exec --fakeroot --overlay "${OVERLAY}" "${IMAGE}" /bin/bash -lc '
@@ -37,6 +37,6 @@ singularity exec --fakeroot --overlay "${OVERLAY}" "${IMAGE}" /bin/bash -lc '
   python method/llm_predict.py \
     --chords-csv "${CHORDS_CSV}" \
     --output "${OUTPUT}" \
-    --model "${PROVIDER}" \
+    --provider "${PROVIDER}" \
     --limit "${LIMIT}"
 '

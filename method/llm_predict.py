@@ -1,11 +1,6 @@
 import argparse
 import csv
-import json
 from pathlib import Path
-
-
-def parse_response(text: str) -> dict:
-    return json.loads(text)
 
 
 def load_completed(output_path: Path) -> set[int]:
@@ -61,12 +56,10 @@ def main():
             track_id = int(row['track_id'])
             chords = row['chords']
 
-            parsed = parse_response(estimator.predict(chords))
-            key = parsed['key']
-            explanation = parsed['explanation']
+            result = estimator.predict(chords)
 
             with open(args.output, 'a', newline='') as f:
-                csv.writer(f).writerow([track_id, key, explanation])
+                csv.writer(f).writerow([track_id, result.key, result.explanation])
 
     print(f"Done. Results written to {args.output}")
 
