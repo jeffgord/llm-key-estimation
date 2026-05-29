@@ -1,56 +1,7 @@
 import argparse
 import csv
 import json
-import os
-import time
 from pathlib import Path
-
-from dotenv import load_dotenv
-from google import genai
-from google.genai import types, errors
-
-class GeminiKeyEstimator:
-    def __init__(self):
-        load_dotenv()
-        api_keys = json.loads(os.getenv('GEMINI_API_KEYS'))
-        self.clients = [genai.Client(api_key=api_key) for api_key in api_keys]
-        self.config = types.GenerateContentConfig(
-            thinking_config=types.ThinkingConfig(thinking_level="high"),
-            response_mime_type="application/json",
-            response_schema=types.Schema(
-                type=types.Type.OBJECT,
-                properties={
-                    "key": types.Schema(type=types.Type.STRING),
-                    "explanation": types.Schema(type=types.Type.STRING),
-                },
-                required=["explanation", "key"],
-            ),
-        )
-
-        prompt_path = Path(__file__).parent / 'prompt.txt'
-        with open(prompt_path, 'r', encoding='utf-8') as f:
-            self.prompt = f.read()
-
-    def predict(self, chords: str) -> str:
-        contents = self.prompt.replace("{CHORDS}", chords)
-        num_clients = len(self.clients)
-
-        for i in range(num_clients):
-            while True:
-                try:
-                    response = self.clients[i].models.generate_content(
-                        model="gemini-3.5-flash",
-                        contents=contents,
-                        config=self.config,
-                    )
-                    return response.text
-                except errors.APIError as e:
-                    if e.code == 503:
-                        time.sleep(30)
-                        continue
-                    if e.code == 429 and i < num_clients - 1:
-                        break
-                    raise
 
 
 def parse_response(text: str) -> dict:
@@ -65,10 +16,24 @@ def load_completed(output_path: Path) -> set[int]:
         return {int(row['track_id']) for row in reader}
 
 
+def make_estimator(model: str):
+    if model == "gemini":
+        from gemini_estimator import GeminiKeyEstimator
+        return GeminiKeyEstimator()
+    if model == "claude":
+        from claude_estimator import ClaudeKeyEstimator
+        return ClaudeKeyEstimator()
+    raise ValueError(f"Unknown model {model!r}. Must be 'gemini' or 'claude'.")
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Predict musical key using Gemini LLM")
+    parser = argparse.ArgumentParser(description="Predict musical key using an LLM")
     parser.add_argument("--chords-csv", type=Path, default=Path("chords/chords.csv"))
     parser.add_argument("--output", type=Path, default=Path("method/llm-predictions.csv"))
+    parser.add_argument("--provider", default="gemini", choices=["gemini", "claude"],
+                        help="Which LLM provider to use")
+    parser.add_argument("--limit", type=int, default=-1,
+                        help="Max predictions to make (-1 = unlimited)")
     args = parser.parse_args()
 
     with open(args.chords_csv, newline='') as f:
@@ -77,7 +42,10 @@ def main():
     completed = load_completed(args.output)
     pending = [r for r in rows if int(r['track_id']) not in completed]
 
-    print(f"Total: {len(rows)} tracks — {len(completed)} already done, {len(pending)} remaining")
+    if args.limit > 0:
+        pending = pending[:args.limit]
+
+    print(f"Total: {len(rows)} tracks — {len(completed)} already done, {len(pending)} to predict")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     write_header = not args.output.exists() or args.output.stat().st_size == 0
@@ -85,7 +53,7 @@ def main():
         if write_header:
             csv.writer(f).writerow(['track_id', 'key', 'explanation'])
 
-    model = GeminiKeyEstimator()
+    estimator = make_estimator(args.provider)
 
     from tqdm import tqdm
     with tqdm(pending, desc="Predicting keys", unit="track") as pbar:
@@ -93,7 +61,7 @@ def main():
             track_id = int(row['track_id'])
             chords = row['chords']
 
-            parsed = parse_response(model.predict(chords))
+            parsed = parse_response(estimator.predict(chords))
             key = parsed['key']
             explanation = parsed['explanation']
 

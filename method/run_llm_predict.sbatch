@@ -16,8 +16,10 @@ OVERLAY=${REPO_ROOT}/conda-overlay.ext3:rw
 
 CHORDS_CSV=${CHORDS_CSV:-chords/chords.csv}
 OUTPUT=${OUTPUT:-method/llm-predictions.csv}
+PROVIDER=${PROVIDER:-gemini}
+LIMIT=${LIMIT:--1}
 
-export CHORDS_CSV OUTPUT
+export CHORDS_CSV OUTPUT PROVIDER LIMIT
 
 cd "${REPO_ROOT}"
 
@@ -26,11 +28,15 @@ echo "Node(s): ${SLURM_NODELIST:-unknown}"
 echo "Working directory: $(pwd)"
 echo "Chords CSV: ${CHORDS_CSV}"
 echo "Output: ${OUTPUT}"
+echo "Model: ${PROVIDER}"
+echo "Limit: ${LIMIT}"
 
 singularity exec --fakeroot --overlay "${OVERLAY}" "${IMAGE}" /bin/bash -lc '
   cd "'"${REPO_ROOT}"'"
   source /ext3/env.sh
   python method/llm_predict.py \
     --chords-csv "${CHORDS_CSV}" \
-    --output "${OUTPUT}"
+    --output "${OUTPUT}" \
+    --model "${PROVIDER}" \
+    --limit "${LIMIT}"
 '
