@@ -1,4 +1,5 @@
 fma-keys/
+choco/
 .DS_Store
 .env
 __pycache__/
