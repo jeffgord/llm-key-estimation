@@ -1,0 +1,11 @@
+A:maj 2.0s
+A:maj 2.0s
+A:maj 4.0s
+D:maj 2.0s
+A:maj 4.3s
+A:maj 1.7s
+D:maj 4.0s
+D:maj 1.0s
+A:maj 1.4s
+A:maj 1.9s
+E:maj 11.8s

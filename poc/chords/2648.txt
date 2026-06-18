@@ -1,0 +1,16 @@
+F:maj 4.5s
+E:7 1.5s
+Bb:maj 6.0s
+C:7 6.0s
+F:maj 5.5s
+F:7 6.5s
+Bb:maj 9.0s
+F:maj 3.0s
+C:7 3.0s
+F:maj 3.0s
+Bb:maj 3.0s
+F:maj 1.5s
+D:7 1.5s
+Bb:maj 1.5s
+C:7 1.5s
+F:maj 3.0s

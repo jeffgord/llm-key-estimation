@@ -1,0 +1,17 @@
+C:min7 6.0s
+C:min7 6.0s
+F:min7 6.0s
+C:min7 6.0s
+F#:hdim7 1.5s
+F:7(#11) 1.5s
+E:7(b5,#9) 1.5s
+A:7(b5,#9) 1.5s
+C:min7 6.0s
+C:min7 12.0s
+F:min7 6.0s
+C:min7 6.0s
+F#:hdim7 1.5s
+F:7(#11) 1.5s
+E:7(b5,#9) 1.5s
+A:7(b5,#9) 1.5s
+C:min7 6.0s

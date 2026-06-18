@@ -1,0 +1,13 @@
+E:maj 4.0s
+A:min 4.0s
+E:maj 4.0s
+A:min 4.0s
+D:min 4.0s
+A:min 4.0s
+E:maj 4.0s
+A:min 2.0s
+A:min 0.5s
+E:maj 0.2s
+E:maj 0.7s
+A:min 17.0s
+A:min 0.3s

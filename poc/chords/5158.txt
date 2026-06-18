@@ -1,0 +1,16 @@
+A:min 2.0s
+G:maj 2.0s
+D:maj 2.0s
+A:min 2.0s
+A:min 2.0s
+G:maj 2.0s
+D:maj 2.0s
+A:min 2.0s
+E:min6 2.0s
+E:min6 2.0s
+A:maj 2.0s
+A:maj 2.0s
+E:min6 2.0s
+E:min6 2.0s
+A:maj 2.0s
+G:maj 2.0s

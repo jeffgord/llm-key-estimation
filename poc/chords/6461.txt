@@ -1,0 +1,17 @@
+Bb:maj 3.0s
+F:7 4.5s
+F:7 1.5s
+Bb:maj 3.0s
+G:7 3.0s
+C:maj 3.0s
+C:7 4.5s
+Eb:maj 1.5s
+Bb:maj 3.0s
+F:7 3.0s
+G:7 3.0s
+C:maj 3.0s
+A:7 3.0s
+D:maj 1.5s
+G:7 3.0s
+F:7 1.5s
+Bb:maj 3.0s

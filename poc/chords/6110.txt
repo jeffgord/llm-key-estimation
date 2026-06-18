@@ -1,0 +1,16 @@
+Eb:maj 4.0s
+Ab:maj 1.0s
+Eb:maj 4.0s
+Ab:maj 4.0s
+F:min 4.0s
+Bb:7 8.0s
+Eb:maj 4.0s
+Bb:7 4.0s
+Eb:maj 6.0s
+Ab:maj 10.0s
+Eb:maj 8.0s
+F:7 8.0s
+Bb:7 6.0s
+Eb:maj 2.0s
+Ab:maj 2.0s
+Eb:maj 2.0s

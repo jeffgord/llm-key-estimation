@@ -1,0 +1,14 @@
+D:min 4.0s
+D:min6 2.0s
+D:7(b9) 2.0s
+G:min 2.0s
+G:min6 1.0s
+A:7(b13) 1.0s
+D:maj7 2.0s
+F:maj7 2.0s
+Bb:maj7 2.0s
+A:7 2.0s
+D:min 1.0s
+F:7 1.0s
+Bb:7 1.0s
+A:7 1.0s

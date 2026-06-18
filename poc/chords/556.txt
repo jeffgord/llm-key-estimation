@@ -1,0 +1,12 @@
+G:min 1.0s
+G:min 1.0s
+F:maj 1.0s
+F:7 1.0s
+B:maj 1.0s
+B:maj 1.0s
+B:maj 1.0s
+C:min 1.0s
+G:min 1.0s
+D:7 1.0s
+G:min 1.0s
+G:min 1.0s

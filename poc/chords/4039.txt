@@ -1,0 +1,10 @@
+A:min 4.0s
+C:maj 2.0s
+A:min 2.0s
+A:min 4.0s
+C:maj 2.0s
+A:min 2.0s
+C:maj 6.0s
+A:min 2.0s
+C:maj 6.0s
+A:min 2.0s

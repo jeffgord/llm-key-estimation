@@ -1,0 +1,14 @@
+G:min 14.0s
+D:7 6.0s
+D:7 6.0s
+D:7 2.0s
+G:min 4.0s
+G:maj 12.0s
+D:7 4.0s
+C:maj 2.0s
+C#:dim 2.0s
+B:min7 2.0s
+E:7 2.0s
+A:min7 2.0s
+D:7 2.0s
+G:maj 4.0s

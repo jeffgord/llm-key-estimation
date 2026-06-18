@@ -1,0 +1,16 @@
+C:min9 8.0s
+C:min9 8.0s
+Eb:min9 8.0s
+Eb:min9 8.0s
+C#:min9 4.0s
+B:min9 4.0s
+B:min9 4.0s
+A:min9 4.0s
+A:min9 4.0s
+G:min9 11.0s
+G:7 1.0s
+C:min9 8.0s
+C:min9 8.0s
+Eb:min9 12.0s
+Eb:minmaj7 3.0s
+G:7 1.0s

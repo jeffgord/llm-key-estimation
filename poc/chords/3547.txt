@@ -1,0 +1,6 @@
+F:maj 1.5s
+C:7 3.0s
+F:maj 3.0s
+Bb:maj 1.5s
+C:7 1.5s
+F:maj 1.5s

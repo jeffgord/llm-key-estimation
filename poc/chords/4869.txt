@@ -1,0 +1,7 @@
+G:maj 1.5s
+D:7 3.0s
+G:maj 3.0s
+C:maj 1.5s
+G:maj 1.0s
+D:7 0.5s
+G:maj 1.5s

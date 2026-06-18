@@ -1,0 +1,16 @@
+A:min 1.0s
+D:min 1.0s
+E:min 1.0s
+A:min 1.0s
+A:min 1.0s
+C:maj 1.0s
+F:maj 1.0s
+C:maj 1.0s
+A:min 1.0s
+C:maj 1.0s
+F:maj 1.0s
+C:maj 1.0s
+A:min 1.0s
+D:min 1.0s
+E:min 1.0s
+A:min 1.0s

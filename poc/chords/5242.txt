@@ -1,0 +1,11 @@
+Bb:maj 6.0s
+F:7 10.0s
+Bb:maj 4.0s
+F:min6 1.0s
+G:7 1.0s
+C:min 2.0s
+Eb:maj 2.0s
+Bb:maj/5 2.0s
+C:min7 1.0s
+F:7 1.0s
+Bb:maj 2.0s

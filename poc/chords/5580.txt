@@ -1,0 +1,13 @@
+C:maj 3.5s
+Ab:dim 0.5s
+D:min7 1.0s
+G:(3,5,b7,9,11) 1.0s
+F:min6/b3 1.0s
+G:7 1.0s
+C:maj 3.5s
+Ab:dim 0.5s
+D:min7 1.0s
+G:(3,5,b7,9,11) 1.0s
+F:min6/b3 1.0s
+G:7 1.0s
+C:7 48.0s

@@ -1,0 +1,17 @@
+E:min 3.0s
+B:7 4.0s
+E:min 1.0s
+G:maj 2.0s
+A:min 1.0s
+E:min 1.0s
+A:min 1.0s
+E:min 1.0s
+B:7 1.0s
+E:min 1.0s
+G:maj 2.0s
+A:min 1.0s
+E:min 1.0s
+A:min 1.0s
+E:min 1.0s
+B:7 1.0s
+E:min 1.0s

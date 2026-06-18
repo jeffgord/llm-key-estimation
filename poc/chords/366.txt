@@ -1,0 +1,6 @@
+D:maj 2.0s
+G:maj 2.0s
+D:maj 6.0s
+G:maj 2.0s
+A:7 2.0s
+D:maj 2.0s

@@ -1,0 +1,5 @@
+A:min 4.0s
+E:maj 4.0s
+A:min 4.0s
+E:maj 2.0s
+A:min 1.0s

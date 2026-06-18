@@ -1,0 +1,16 @@
+E:min7 2.0s
+C:maj7 6.0s
+G:maj/3 2.0s
+D:maj/5 6.0s
+E:min7 2.0s
+C:maj7 6.0s
+G:maj/3 2.0s
+D:maj/5 154.0s
+E:min7 3.0s
+C:maj7 5.0s
+G:maj/3 2.0s
+D:maj/5 6.0s
+E:min7 2.0s
+C:maj7 6.0s
+G:maj/3 2.0s
+D:maj/5 206.0s

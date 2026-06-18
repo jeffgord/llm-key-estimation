@@ -1,0 +1,6 @@
+C:min7 8.0s
+F:min7 4.0s
+C:min7 4.0s
+Ab:7 2.0s
+G:7 2.0s
+C:min7 4.0s

@@ -1,0 +1,7 @@
+B:min 2.0s
+E:7 2.0s
+B:min 2.0s
+E:7 2.0s
+B:min 2.0s
+E:7 2.0s
+F#:7 4.0s

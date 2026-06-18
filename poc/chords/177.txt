@@ -1,0 +1,17 @@
+F:maj6/b7 2.0s
+F:maj6/b7 20.9s
+Ab:min7/5 37.1s
+F:maj6/b7 2.0s
+F:maj6/b7 2.0s
+F:maj6/b7 2.0s
+F:maj6/b7 2.0s
+F:maj6/b7 0.9s
+Db:sus4(7,13) 1.1s
+C:sus4(7,9) 1.0s
+C:7(#11) 1.0s
+F:sus4(7,13) 2.0s
+Bb:sus4(7,13) 2.0s
+D:7(#9) 2.0s
+F:maj6/b7 2.0s
+D:7(#9) 2.0s
+F:maj6/b7 2.0s

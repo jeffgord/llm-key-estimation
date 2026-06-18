@@ -1,0 +1,10 @@
+Bb:maj 15.2s
+Eb:maj 10.0s
+Bb:maj 4.0s
+F:7 8.0s
+Bb:maj 8.8s
+Bb:maj 15.2s
+Eb:maj 10.0s
+Bb:maj 4.8s
+F:7 7.2s
+Bb:maj 8.0s

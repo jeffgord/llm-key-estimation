@@ -1,0 +1,14 @@
+C:min 20.0s
+Ab:7 4.0s
+C:min 2.0s
+Ab:7 1.0s
+G:7 1.0s
+C:min 4.0s
+C:min 2.0s
+G:min7 2.0s
+C:min 2.0s
+G:min7 2.0s
+C:min 2.0s
+Ab:7 1.0s
+G:7 1.0s
+C:min 4.0s

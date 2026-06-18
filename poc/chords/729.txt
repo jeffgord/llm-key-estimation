@@ -1,0 +1,12 @@
+E:min 4.0s
+B:7 3.0s
+E:min 1.0s
+E:min 4.0s
+B:7 3.0s
+E:min 1.0s
+E:min 4.0s
+B:7 3.0s
+E:min 1.0s
+E:min 4.0s
+B:7 3.0s
+E:min 1.0s

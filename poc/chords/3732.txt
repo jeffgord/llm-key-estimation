@@ -1,0 +1,9 @@
+A:min 9.0s
+D:min 3.0s
+E:7 3.0s
+A:min 3.0s
+B:7 3.0s
+E:maj 13.5s
+D:min 3.0s
+E:7 1.5s
+A:maj 57.0s

@@ -1,0 +1,5 @@
+C:maj 6.0s
+G:7 8.0s
+C:maj 8.0s
+G:7 8.0s
+C:maj 2.0s

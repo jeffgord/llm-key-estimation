@@ -1,0 +1,15 @@
+G:maj 6.0s
+D:7 2.0s
+G:maj 5.0s
+D:7 1.0s
+G:maj 8.0s
+D:7 2.0s
+G:maj 5.0s
+D:7 1.0s
+G:maj 2.0s
+C:maj 4.0s
+G:maj 2.0s
+D:7 2.0s
+G:maj 5.0s
+D:7 1.0s
+G:maj 2.0s
