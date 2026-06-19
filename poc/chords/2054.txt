@@ -1,9 +1,0 @@
-F:maj 8.0s
-F:7 12.0s
-F:maj 4.0s
-F:7 12.0s
-F:maj 4.0s
-F:maj 16.0s
-F:7 24.0s
-Gb:maj7 3.8s
-F:maj7 2.2s

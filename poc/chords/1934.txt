@@ -1,8 +1,0 @@
-A:min7/4 8.0s
-C:min7/4 8.0s
-A:min7/4 8.0s
-C:min7/4 8.0s
-Bb:min7/4 8.0s
-C#:min7 8.0s
-A:min7/4 8.0s
-C:min7/4 8.0s

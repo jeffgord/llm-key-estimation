@@ -1,6 +1,0 @@
-D:maj 2.0s
-B:min 2.0s
-G:maj 2.0s
-A:maj 1.0s
-A:7 1.0s
-D:maj 2.0s

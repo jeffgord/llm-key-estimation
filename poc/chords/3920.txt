@@ -1,8 +1,0 @@
-C:maj 27.0s
-C:maj 87.0s
-E:maj 11.5s
-G:7 0.5s
-C:maj 3.0s
-C:maj 3.0s
-F:min 1.5s
-C:maj 1.5s

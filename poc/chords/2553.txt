@@ -1,8 +1,0 @@
-F:maj 2.0s
-F:maj 20.0s
-D:min(9) 2.0s
-D:min(9) 35.0s
-F:maj 2.0s
-F:maj 20.0s
-D:min(9) 2.0s
-D:min(9) 2.0s

@@ -1,8 +1,0 @@
-G:maj 2.0s
-A:maj 2.0s
-B:maj 2.0s
-B:maj 2.0s
-G:maj 2.0s
-A:maj 2.0s
-F#:maj 4.0s
-F#:maj 16.0s

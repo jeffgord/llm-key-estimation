@@ -1,5 +1,0 @@
-G:maj 7.5s
-D:7 4.0s
-G:maj 12.0s
-D:7 4.0s
-G:maj 4.0s

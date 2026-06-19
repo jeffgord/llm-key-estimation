@@ -1,4 +1,0 @@
-C#:maj 2.0s
-B:maj 2.0s
-F#:maj 2.0s
-C#:maj 2.0s

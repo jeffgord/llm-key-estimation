@@ -1,3 +1,0 @@
-D:min9 32.0s
-Eb:min9 16.0s
-D:min9 16.0s

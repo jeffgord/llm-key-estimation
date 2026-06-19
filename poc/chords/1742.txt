@@ -1,8 +1,0 @@
-Bb:maj 4.0s
-C:maj 2.0s
-F:maj 2.0s
-Bb:maj 2.0s
-Eb:maj 2.0s
-Bb:maj 1.0s
-F:maj 1.0s
-Bb:maj 2.0s

@@ -1,6 +1,0 @@
-B:dim 0.1s
-B:dim 0.2s
-B:dim 0.7s
-E:min 0.6s
-E:min 0.1s
-D:maj 0.7s

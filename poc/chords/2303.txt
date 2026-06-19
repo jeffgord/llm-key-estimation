@@ -1,3 +1,0 @@
-D:min7 18.0s
-Eb:min7 16.1s
-D:min7 1.9s

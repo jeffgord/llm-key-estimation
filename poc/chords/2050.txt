@@ -1,9 +1,0 @@
-C:min 5.8s
-G:maj 8.0s
-C:min 3.8s
-F:min 4.2s
-C:min 2.2s
-F:min 1.5s
-C:min 2.0s
-G:maj 2.2s
-C:min 1.8s
