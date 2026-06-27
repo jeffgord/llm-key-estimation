@@ -1,0 +1,35 @@
+# Using LLMs for Key Estimation
+
+*I wanted to see whether large language models could reliably estimate musical key from just the output of a chord recognizer. I tested this out using the FMAK dataset, and compared to two baselines. Turns out the LLM-driven method is pretty good at this task, which is surprising given how little information the LLM uses to make a prediction.*
+
+---
+
+### *What is key estimation and why is it hard?*
+
+Key estimation is the task of identifying the key of a piece of a music (as in having a computer "listen" to a song and say, 'ah, this sounds like G major'). Notably, key estimation is a rather underexplored topic in music information retrieval (TODO: provide some evidence for this). This is probably because its applications are limited. More popular MIR topics like beat detection and chord recognition are vital for stuff like automatic transcription or real-time machine accompaniment. But there are far fewer uses for estimating the key of a song, aside from metadata collection perhaps. 
+
+todo: figure of key estimation
+
+Still, it's an interesting problem to work on. From a musical perspective, defining a song's key is a rather dubious task. Music is often about shifting between keys, or maybe being in one key but gesturing at another (like when the bridge of a jazz tune "modulates" to the IV). So it's not always straightforward to say exactly what the key of a song is with the conciseness that a multi-class classification setup demands.
+
+Because key estimation is so underexplored, the available datasets are fairly small and quirky. For a while, the most popular datasets were GiantSteps Key (600 tracks) and Beatport EDM Key (1,486 tracks), both of which include only EDM songs. This lack of data, both in terms of quantity and diversity, is a big issue for machine learning approaches. When humans figure out a song's key, they are usually thinking about very high level musical information -- e.g. looking at which chord ends a section, finding V-I cadences, etc.. It seems unlikely that an algorithm could uncover these kinds of complex, high-level patterns from limited data.
+
+### *Using LLMs for Key Estimation*
+
+One way to deal with a lack of labeled data is to rely in part on a foundation model, which trains on a large corpus of unlabeled data in a self-supervised fashion. The hope is that this process encourages your model to learn generalizable representations, which can then be fine-tuned for many different tasks with just a small amount of labeled data. Indeed, a pre-trained music foundation model like MERT would probably work well for key estimation.
+
+LLMs are another kind of foundation model which have been *quite* popular lately. And with so much money poured into their by development by frontier labs, they should be good at lots of different tasks. But the problem with using LLMs for music tasks is that they operate on text, not audio. So to use them for key estimation, we need some way to represent music as text.
+
+###  *Chord Recognizers: Music → Text*
+
+In fact, there a many ways to represent music as text, though all of them are lossy. For instance, you could describe it: *this song sounds like a summer's day, but ruined by violins*. Or you could use music notation that has somehow been converted to words: *play D4, E4, F4, G4 as eigbth notes, E4 as a quarter note, then C4 and E4 as eighth notes again, oh and hold out the E4 why don't you*. For a whole song with multiple instruments, this would quickly get out of hand. Even for *Claude Fable*.
+
+So, we need a compact representation with task-relevant information. We've already discussed how key can often be inferred from a song's harmony and structure, so a good choice might be a chord chart (like iReal Pro style). We don't yet have machines that can reliably write out a song's chart with labeled sections and all. But we can get pretty close with a chord recognizer. A chord recognizer processes music, and spits out its best guess as to what chords are happening and for how long, like so:
+
+
+
+Obviously, we lose some information which might be important for key estimation by doing this (such as the main melody). But it looks like it might still contain enough information to be useful, and it's plenty compact enough for an LLM to work with.
+
+### *Putting it together*
+
+
