@@ -1,12 +1,18 @@
-# Using LLMs for Key Estimation
+---
+title: "Using LLMs for Key Estimation"
+author: "Jeffrey Gordon"
+date: "2026-06-27"
+---
 
-*I wanted to see whether large language models could reliably estimate musical key from just the output of a chord recognizer. I tested this out using the FMAK dataset, and compared to two baselines. Turns out the LLM-driven method is pretty good at this task, which is surprising given how little information the LLM uses to make a prediction.*
+*I wanted to see whether large language models could reliably estimate musical key from just the output of a chord recognizer. I tested this out using the FMAK dataset, and compared to two baselines. Turns out the LLM-driven method is pretty good at this task, which is surprising given how little information the LLM uses to make a prediction. See the [GitHub Repo](https://github.com/jeffgord/llm-key-estimation) for code.*
+
+*This research was adapted from my final project completed for GY-asdf Music Information Retrieval taught by Brian McFee at NYU. The methods and writeup presented here are completely my own, though the experimental setup and baseline evaluations come from the class project. Therefore, credit is also due to my team members: Shan Shan Tu, Jason Lee, and Teddy Ryles.* todo: get course number, and confirm team member spelling.
 
 ---
 
 ### *What is key estimation and why is it hard?*
 
-Key estimation is the task of identifying the key of a piece of a music (as in having a computer "listen" to a song and say, 'ah, this sounds like G major'). Notably, key estimation is a rather underexplored topic in music information retrieval (TODO: provide some evidence for this). This is probably because its applications are limited. More popular MIR topics like beat detection and chord recognition are vital for stuff like automatic transcription or real-time machine accompaniment. But there are far fewer uses for estimating the key of a song, aside from metadata collection perhaps. 
+Straightforwardly, key estimation is the task of identifying the key of a piece of a music (as in having a computer "listen" to a song and say, 'ah, this sounds like G major'). The output of a key estimation system is one of 24 classes -- 12 pitch classes * 2 qualities (major or minor). Notably, key estimation is a rather underexplored topic in music information retrieval (TODO: provide some evidence for this). This is probably because its applications are limited. More popular MIR topics like beat detection and chord recognition are vital for stuff like automatic transcription or real-time machine accompaniment. But there are far fewer uses for estimating the key of a song, aside from metadata collection perhaps. 
 
 todo: figure of key estimation
 
@@ -22,7 +28,9 @@ LLMs are another kind of foundation model which have been *quite* popular lately
 
 ###  *Chord Recognizers: Music → Text*
 
-In fact, there a many ways to represent music as text, though all of them are lossy. For instance, you could describe it: *this song sounds like a summer's day, but ruined by violins*. Or you could use music notation that has somehow been converted to words: *play D4, E4, F4, G4 as eigbth notes, E4 as a quarter note, then C4 and E4 as eighth notes again, oh and hold out the E4 why don't you*. For a whole song with multiple instruments, this would quickly get out of hand. Even for *Claude Fable*.
+In fact, there a many ways to represent music as text, though all of them are lossy. For instance, you could describe it: *this song sounds like a summer's day, but ruined by violins*. Or you could use music notation that has somehow been converted to words: *play D4, E4, F4, G4 as eigbth notes, E4 as a quarter note, then C4 and E4 as eighth notes again, oh and hold out the E4 why don't you*. For a whole song with multiple instruments, this would quickly get out of hand. Even for *Claude Fable*. 
+
+todo: change above example to MusicXML
 
 So, we need a compact representation with task-relevant information. We've already discussed how key can often be inferred from a song's harmony and structure, so a good choice might be a chord chart (like iReal Pro style). We don't yet have machines that can reliably write out a song's chart with labeled sections and all. But we can get pretty close with a chord recognizer. A chord recognizer processes music, and spits out its best guess as to what chords are happening and for how long, like so:
 
@@ -32,4 +40,96 @@ Obviously, we lose some information which might be important for key estimation 
 
 ### *Putting it together*
 
+So, to estimate the key for a given piece of music, we first run the audio through a chord recognizer. For this experiment, I used this one from 2019 because it was quick to get running from the authors' repo, and holds up pretty well against more modern approaches as evaluated by MIREX 2025. We then feed the output of the chord recognizer to an LLM. The prompt looks like this:
 
+> Tell me what key you think this song is in based on its chords:
+> </br>
+> {CHORDS}
+>
+> Beware that these chords came from a chord recognizer -- not a lead sheet -- so there may be mistakes or confusing enharmonic spellings.
+
+In actuality there's a bit more detail, which you can see on the repo. For the LLM, I used `Gemini 3.1 Flash Lite`, mainly because you can call it via API for free with Google's AI Studio. I also tested out using fancier LLMs on a small subset of data, but found that they achieved nearly identical results. This is good because using the fancy ones can get expensive, especially if you let them think.
+
+With it all put together, the pipeline looks like this:
+
+todo: figure
+
+The nice thing about this pipeline is that there is no need for re-training. Of course, one could theoretically stitch the chord recognizer and LLM together and fine-tune on a labeled dataset. But the hope is that the pre-trained chord recognizer has already learned a useful representation for this task, and the LLM has seen enough music theory in its training data to process that representation effectively.
+
+### *Experimental Setup*
+
+To figure out whether this system works at all, we have to test it on tracks for which we already know the key, and compare its estimates to those of other systems. I chose the relatively recently compiled FMAK dataset for this purpose, which includes key annotations for 5,489 songs from the Free Music Archive. I opted for the v2 annotations, which includes corrections for some identified mislabelings. While it's not perfect (more on this later), this dataset far surpasses other key estimation datasets in terms of size and musical diversity, so it's better at evaluating an algorithm's performance "in the wild." Notably, FMAK labels indicate the key for only the first 60 seconds of audio in each track. Therefore, I trimmed the tracks to 60 seconds before running through each of the key estimators.
+
+todo: figure of size comparison to other datasets, and genre diversity within FMAK
+
+I chose two baseline estimators to compare the Chords-LLM method to. The first is the Krumhansl-Schmuckler key-finding algorithm (KS, hereafter). This is a relatively simple DSP method which involves first computing how much of each note is present in the passage of music (by averaging a chromagram over time). Then, these note activations are compared to 24 key profiles, selecting the most similar profile as the key estimate. The key profiles (shown below) come from a music psychology experiment where listeners were prompted to identify how well different tones continued a sequence of notes.
+
+todo: KS key profiles
+
+The other baseline is more modern deep learning approach -- the AllConv model as implemented in `madmom`. This is a CNN-based model designed specifically to perform well across musical genre (remember that early systems were traine/evaluated mostly on EDM music).
+
+### *Running the numbers*
+
+The results of the experiment are shown in the table below. Within the 24-class classification setup, all methods are assessed on raw accuracy, macro F1 (i.e. an unweighted average of F1 across classes), and MIREX score averaged across all tracks. The MIREX score is a custom metric used to evaluation a key prediction in the MIREX competition. It is a musically-informed metric which penalizes musically plausible mistakes less heavily. MIREX score is calculated as follows:
+
+todo: MIREX metric table https://music-ir.org/mirex/wiki/2021:Audio_Key_Detection
+
+| Method | Accuracy | F1 (Macro) | Avg. MIREX |
+| :--- | :--- | :--- | :--- |
+| KS (baseline) | 0.5411 | 0.5167 | 0.6247 |
+| AllConv (baseline) | 0.6617 | 0.6429 | 0.7211 |
+| Chord-LLM | 0.6846*** | 0.6617* | 0.7291 |
+| Chord-LLM w/ Chroma | 0.6868*** | 0.6683*** | 0.7336* |
+
+: Performance comparison of baselines with Chord-LLM methods. Asterisks indicate performance better than the best baseline (AllConv): * $p < 0.05$, ** $p < 0.01$, *** $p < 0.001$ {#tbl-performance}
+
+todo: double check these numbers
+
+Among the two baselines, AllConv performs substantially better than KS. This makes sense, since AllConv is a data-driven deep learning approaching, while KS is much cruder. In particular, KS discards all timing information by averaging in an unweighted fashion across the passage to be analyzed. Timing information is obviously important to determining the harmony and thus key of a song -- for instance, a note that falls on beat 1 is likely more important to the harmony than a note falling on the and of 3 -- so it makes sense that KS suffers for this. In addition, the key profiles used in KS come from a rather peculiar music psychology experiment (see above), so we shouldn't expect them to be perfect for key estimation.
+
+The Chord-LLM method (third row) performs better than AllConv on all metrics. The improvement in accuracy is significant at $\alpha = 0.05$ using a paired McNemar test ($p < 0.001$). The improvement in F1 is also significant ($p = 0.017$) as assessed by a paired bootstrap test. However, the improvement in average MIREX score falls short of signifiance ($p = 0.164$) using a paired sign-flip permutation test.
+
+After quickly reviewing some of the errors made by Chord-LLM, I noticed failures on tracks with harmonically ambiguous chords. For example, if a song just switches between `A:maj` and `E:maj` chords, *A major* and *E major* are both plausible keys. To help the LLM distinguish between keys in a situation like this, I tried giving it the note activations (the same ones used by KS) in addition to the chords. The fourth row of the table shows performance. This leads to an ever so slight improvement in accuracy and F1, but a decent bump in MIREX score, which pushes it over the significance threshold compared to AllConv ($p = 0.031$).
+
+### *Key Distance Error Analysis*
+
+Another musically-informed way to evaluate performance is to consider the distance (in the set theory sense) between the pitches in the predicted and true key. For example, *C major* and *D major* share all but two pitches -- C and F (which are both sharp in *D major* but not in *C major*) -- so they have a key distance of two. One complication is dealing with mode errors, where the predicted key is major and the true key is minor, or vice versa. In this stuation, I decided to treat the minor key as its relative major. This means that *C major* and *A minor* would have a key distance of 0, *C major* and *D minor* would have a key distance of 1, and so on.
+
+The figure below shows key distance distributions for all methods. For a decent algorithm which makes musically plausible errors, we expect to see a downward trend, where prediction errors with high key distance become increasingly less common. This trend is largely borne out among the algorithms considered here, with most predictions having a key distance of 0 (which includes relative key errors), some errors having a key distance of 1, and small amounts of error at greater key distances. Intuitively, among humans, keys sharing many pitches are more easily confused, while high key distance errors likely only happen if there is a labelling error or perhaps genuine ambiguity (e.g. non-functional harmony or chromaticism). So it makes sense that machines exhibit similar behavior.
+
+todo: add key distance plot. also, considering explicitly showing the proportion of relative and parallel errors somehow on the plot
+
+One notable departure from the expected downwared trend is the bump at a key distance of 3 (i.e. all algorithms exhibit more errors at a distance of 3 than a distance of 2 or 4). The most probable explanation here is that parallel key errors (predicting the right tonic but the wrong mode) have a key distance of 3. Despite the fact that parallel keys share relatively few notes, there are a number of common musical techniques that make this mistake more likely. Within standard functional harmony, heavy use of parallal modal interchange might obscure the distinction between major and minor. Blues music often deliberately includes both major and minor thirds, and often features dominant seventh chords rooted on the tonic -- practices which make a either a *major* or *minor* label (and trip up both human labelers and algorithms). These are just a few examples from Western popular music (which overwhelmingly comprises the FMAK dataset), but there are many more such examples from music that falls outside of this delineation.
+
+Another interesting aspect of the key distance distribution is how the proportion of AllConv predictions with key distance 0 are equal to (or ever so slightly above) the Chord-LLM systems' proportion of key distance 0 predictions. This is surprising because the Chord-LLM methods outperformed AllConv across all of the class-wise metrics (see above). Remember, though, that relative key errors are included within predictions with key distance 0, so AllConv must be making more relative key mistakes than the LLM methods.
+
+This is demonstrated straightforwardly in the table below, which shows the proportion of errors made by each algorithm which are relative and parallel key confusions. The AllConv system is highly susceptible to making relative key errors, which comprise more than 25% of all its errors. By contrast, parallel key errors make up a small fraction of its errors. This highlights a weakness of the Chord-LLM systems -- while the Chord-LLM systems are less susceptible to relative key errors, they do make more parallel errors.
+
+todo: I think we need to figure out a better way to present this information. Maybe looking at raw counts would be better -- this is just too confusing.
+
+| Method | Relative | Parallel |
+| :--- | ---: | ---: |
+| KS (baseline) | 0.141 | 0.159 |
+| AllConv (baseline) | 0.258 | 0.099 |
+| Chord-LLM | 0.180 | 0.177 |
+| Chord-LLM w/ Chroma | 0.184 | 0.183 |
+
+: Proportion of errors made by each algorithm which are relative and paraellel key confusions. {#tbl-confusions}
+
+todo: double check the numbers
+
+### *What went right?*
+
+It's cool that the Chord-LLM methods perform well, even out-performing a relatively strong deep learning approach (otherwise, I may not have bothered to write this up). This makes a lot of sense, though -- LLMs have a lot of processing power, and are trained on data that includes plenty of music theory. 
+
+However, I do think that the chord recognizer is actually what's doing most of the work here. The LLM does a good job here because the chords its fed carry strong signal for predicting key. It's possible that a much simpler machine that processes chords could achieve comparable performance here just because a song's chords are a good *feature representation* for this task. But what's nice about using a pre-trained LLM is that it doesn't require any additional training, and can still make solid predictions under ambiguity.
+
+todo: add something about the amount of training data the chord recognizer was trained on
+
+### *What went wrong?*
+
+
+### *Drawbacks*
+
+Compute inefficiency
+Worth testing out different chord recognizers
