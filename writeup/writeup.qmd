@@ -111,13 +111,27 @@ Now, we have a pretty clear picture of the Chord-LLM methods' performance compar
 
 ### *A hybrid system*
 
+We can capitalize on the fact that AllConv and the Chord-LLM systems make different errors to develop a hybrid method that performs better than either of the systems alone. Since Chord-LLM w/ Chroma is the strongest system considered so far, we'll use that as the bedrock (returning its predictions most of the time). However, we know the Chord-LLM w/ Chroma is liable to make parallel key errors. So we'd like to be able to detect when Chord-LLM w/ Chroma will make this error, and use the AllConv prediction instead.
+
+A key insight is that the predictions themselves can be used to detect a parallel key error. If both Chord-LLM w/ Chroma and AllConv predict the same tonic, that's a strong signal that the predicted tonic is correct. Then, either both systems also predicted the same mode, in which case it doesn't matter which prediction you choose as the final output. Or, the predicted modes differ. Since we've already established that the tonic is likely correct, we'd do better to choose AllConv's prediction, since it makes fewer parallel key errors. Note that this isn't a perfect detector of parallel key errors -- it's possible that occassionally the two systems predict the same tonic, but are both wrong -- but as a heuristic, it's decent enough.
+
+todo: picture of pipeline
+
+The performance of this hybrid system is shown in the table below. The hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics. Figure~ shows the same key distance distribution plot as above, but comparing the hybrid system to its individual components. As we hoped for, the hybrid achieves the best of both worlds -- few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.
+
+todo: add table
+todo: add p-values
+todo: add figure
+
+If I was choosing a key estimation system to deploy in the wild and my first and foremost goal was accuracy, this is the one I'd choose. Though at this point, the hybrid system is highly optimized for this specific dataset. So it might be best to confirm that these results hold on a validation set before committing.
+
 ### *What went right?*
 
 It's cool that the Chord-LLM methods perform well, even out-performing a relatively strong deep learning approach (otherwise, I may not have bothered to write this up). This makes a lot of sense, though -- LLMs have a lot of processing power, and are trained on data that includes plenty of music theory. 
 
 However, I do think that the chord recognizer is actually what's doing most of the work here. The LLM does a good job here because the chords its fed carry strong signal for predicting key. It's possible that a much simpler machine that processes chords could achieve comparable performance here just because a song's chords are a good *feature representation* for this task. But what's nice about using a pre-trained LLM is that it doesn't require any additional training, and can still make solid predictions under ambiguity.
 
-todo: add something about the amount of training data the chord recognizer was trained on
+todo: add something about why hybrid system works -- why do the two methods complement each other?
 
 ### *What went wrong?*
 
