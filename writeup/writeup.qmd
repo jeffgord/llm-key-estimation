@@ -127,7 +127,7 @@ If I was choosing a key estimation system to deploy in the wild and my main goal
 
 ### *What went right?*
 
-It's cool that the Chord-LLM methods perform well, even out-performing a relatively strong deep learning approach (otherwise, I may not have bothered to write this up). This makes a lot of sense, though -- LLMs have a lot of power, and are trained on data that includes plenty of music theory. 
+It's cool that the Chord-LLM methods perform well, even out-performing a relatively strong deep learning approach. Otherwise, I may not have bothered to write this up. This makes a lot of sense, though -- LLMs have a lot of power, and are trained on data that includes plenty of music theory. 
 
 However, I do think that the chord recognizer is actually what's doing most of the work here. The LLM does a good job here because the chords its fed carry strong signal for predicting key. It's possible that a much simpler machine that processes chords could achieve comparable performance here just because a song's chords are a good *feature representation* for this task. But what's nice about using a pre-trained LLM is that it doesn't require any additional training, and can still make solid predictions under ambiguity.
 
@@ -135,8 +135,11 @@ It's also interesting that Chord-LLM and AllConv differ enough such that a simpl
 
 ### *What went wrong?*
 
+Still, the best system only gets the key correct about 71% of the time. That's surprisingly poor performance.
+
 
 ### *Drawbacks*
 
-Compute inefficiency
-Worth testing out different chord recognizers
+Compute inefficiency - maybe cheaper LLMs can do this task
+Worth testing out different chord recognizers?
+adding other features to the LLM prompt?

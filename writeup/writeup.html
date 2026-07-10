@@ -227,16 +227,17 @@ Table&nbsp;1: Performance comparison of baselines with Chord-LLM methods. Asteri
 </section>
 <section id="what-went-right" class="level3">
 <h3 class="anchored" data-anchor-id="what-went-right"><em>What went right?</em></h3>
-<p>It’s cool that the Chord-LLM methods perform well, even out-performing a relatively strong deep learning approach (otherwise, I may not have bothered to write this up). This makes a lot of sense, though – LLMs have a lot of power, and are trained on data that includes plenty of music theory.</p>
+<p>It’s cool that the Chord-LLM methods perform well, even out-performing a relatively strong deep learning approach. Otherwise, I may not have bothered to write this up. This makes a lot of sense, though – LLMs have a lot of power, and are trained on data that includes plenty of music theory.</p>
 <p>However, I do think that the chord recognizer is actually what’s doing most of the work here. The LLM does a good job here because the chords its fed carry strong signal for predicting key. It’s possible that a much simpler machine that processes chords could achieve comparable performance here just because a song’s chords are a good <em>feature representation</em> for this task. But what’s nice about using a pre-trained LLM is that it doesn’t require any additional training, and can still make solid predictions under ambiguity.</p>
 <p>It’s also interesting that Chord-LLM and AllConv differ enough such that a simple hybrid system improves on the performance of both. Especially so given that both models are fundamentally CNN-based (AllConv and the chord recognizer for the Chord-LLM systems both use CNN’s to process the input audio spectrogram). One possible explanation for this is that the Chord-LLM systems rely heavily on an LLM’s parametric knowledge of music theory, while AllConv is more grounded in audio analysis. I’ve already discussed how crucial music theory can be for determining the key of a passage, but there are certainly cases where the chord representation alone is not enough to specify a passage’s key. Adding an additional layer that is closer to the audio can help in these situations. But this is really just a guess.</p>
 </section>
 <section id="what-went-wrong" class="level3">
 <h3 class="anchored" data-anchor-id="what-went-wrong"><em>What went wrong?</em></h3>
+<p>Still, the best system only gets the key correct about 71% of the time. That’s surprisingly poor performance.</p>
 </section>
 <section id="drawbacks" class="level3">
 <h3 class="anchored" data-anchor-id="drawbacks"><em>Drawbacks</em></h3>
-<p>Compute inefficiency Worth testing out different chord recognizers</p>
+<p>Compute inefficiency - maybe cheaper LLMs can do this task Worth testing out different chord recognizers? adding other features to the LLM prompt?</p>
 </section>
 
 </main>
