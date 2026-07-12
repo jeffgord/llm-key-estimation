@@ -40,13 +40,14 @@ Obviously, we lose some information which might be important for key estimation 
 
 ### *Putting it together*
 
-So, to estimate the key for a given piece of music, we first run the audio through a chord recognizer. For this experiment, I used this one from 2019 because it was quick to get running from the authors' repo, and holds up pretty well against more modern approaches as evaluated by MIREX 2025. We then feed the output of the chord recognizer to an LLM. The prompt looks like this:
+So, to estimate the key for a given piece of music, we first run the audio through a chord recognizer. For this experiment, I used this one from 2019 because it was quick to get running from the authors' repo, and holds up pretty well against more modern approaches as evaluated by MIREX 2025. We then feed the output of the chord recognizer to an LLM. The prompt looks roughly like this:
 
 > Tell me what key you think this song is in based on its chords:
 > </br>
 > {CHORDS}
 >
 > Beware that these chords came from a chord recognizer -- not a lead sheet -- so there may be mistakes or confusing enharmonic spellings.
+> Also, long songs have been trimmed to 60s in length, so the chords may end in the middle of a phrase.
 
 In actuality there's a bit more detail, which you can see on the repo. For the LLM, I used `Gemini 3.1 Flash Lite`, mainly because you can call it via API for free with Google's AI Studio. I also tested out using fancier LLMs on a small subset of data, but found that they achieved nearly identical results. This is good because using the fancy ones can get expensive, especially if you let them think.
 
