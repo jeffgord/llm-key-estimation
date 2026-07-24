@@ -96,7 +96,7 @@ After quickly reviewing some of the errors made by Chord-LLM, I noticed failures
 
 Another musically-informed way to evaluate performance is to consider the distance (in the set theory sense) between the pitches in the predicted and true key. For example, *C major* and *D major* share all but two pitches -- C and F (which are both sharp in *D major* but not in *C major*) -- so they have a key distance of two. One complication is dealing with mode errors, where the predicted key is major and the true key is minor, or vice versa. In this stuation, I decided to treat the minor key as its relative major. This means that *C major* and *A minor* would have a key distance of 0, *C major* and *D minor* would have a key distance of 1, and so on.
 
-When humans determine the key of a passage, they may sometimes confuse the correct key for a different one with a low key distance from the correct key, which shares many of the same pitches. A reasonably competent musician will only make a high key distance mistake if there is genuine ambiguity (e.g. non-functional harmony or chromaticism) or a labelling issue. So for a decent key estimation algorithm which makes musically plausible mistakes, we expect to see few predictions with a high key distance from the label. This trend is largely borne out, shown in figure~ below -- all algorithms examined here show fewer predictions with increasing key distance. 
+When humans determine the key of a passage, they may sometimes confuse the correct key for a different one with a low key distance from the correct key, which shares many of the same pitches. A reasonably competent musician will only make a high key distance mistake if there is genuine ambiguity (e.g. non-functional harmony or chromaticism) or a labelling issue. So for a decent key estimation algorithm which makes musically plausible mistakes, we also expect to see few predictions with a high key distance from the label. This trend is largely borne out, shown in figure~ below -- all algorithms examined here show fewer predictions with increasing key distance. 
 
 todo: add key distance plot. also, considering explicitly showing the proportion of relative and parallel errors somehow on the plot
 
@@ -116,23 +116,19 @@ We can capitalize on the fact that AllConv and the Chord-LLM systems make differ
 
 A key insight is that the predictions themselves can be used to detect a parallel key error. If both Chord-LLM w/ Chroma and AllConv predict the same tonic, that's a strong signal that the predicted tonic is correct. Then, either both systems also predicted the same mode, in which case it doesn't matter which prediction you choose as the final output. Or, the predicted modes differ. Since we've already established that the tonic is likely correct, we'd do better to choose AllConv's prediction, since it makes fewer parallel key errors. Note that this isn't a perfect detector of parallel key errors -- it's possible that occassionally the two systems predict the same tonic, but are both wrong. As a heuristic, though, it's decent enough.
 
-There are other situations where it might make sense to prefer AllConv's predictions, too. Consider a song which is just one person singing alone. There's no harmony here, so the chord recognizer might just output `N 60s` (i.e. no chord detected). Acting on this output, the LLM is just guessing (though the added Chroma profiles probably help a bit). In this situation, we'd prefer to go with AllConv's prediction, since it doesn't rely merely on harmony.
+todo: add performance metrics table
 
-I tried out a few different ways of dealing with this situation. One way is to have the LLM spit out a confidence score along with its key prediction, and use the AllConv prediction when the LLM's confidence is low. However, I found that a simpler method achieved better results. For each song, calculate the proportion of the total duration for which the chord is `N`. When this proportion is above some threshold, use AllConv's prediction instead. Experimentally, I determined the best threshold to be about 0.5.
+The performance of this system is shown in the third row of table above (with the metrics of the individual component systems included in the first two rows for comparisons). This hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics. Additionally, figure~ shows the same key distance distribution plot from before. As we hoped for, the hybrid system achieves the best of both worlds -- few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.
+
+todo: add key distance table
+
+There are other situations where it might make sense to prefer AllConv's predictions, too. Consider a song which is just one person singing alone. There's no harmony here, so the chord recognizer would just output `N 60s` (i.e. no chord detected). Acting on this output, the LLM is just guessing (though the added Chroma profiles probably help a bit). In this situation, we'd prefer to go with AllConv's prediction, since it doesn't rely merely on harmony.
+
+I tried out a few different ways of dealing with this situation. One way is to have the LLM spit out a confidence score along with its key prediction, and use the AllConv prediction when the LLM's confidence is low. However, I found that a simpler method achieved better results. For each song, calculate the proportion of the total duration for which the chord is `N`. When this proportion is above some threshold, use AllConv's prediction instead. Experimentally, I determined the best threshold to be around 0.5. The figure below depicts the logic behind this hybrid system.
 
 todo: picture of pipeline
 
-The figure above shows the full pipeline of this hybrid system. The performance of 
-
-The performance of two hybrid systems is shown in the table below.
-
-The performance of this hybrid system is shown in the table below. The hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics. Figure~ shows the same key distance distribution plot as above, but comparing the hybrid system to its individual components. As we hoped for, the hybrid system achieves the best of both worlds -- few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.
-
-todo: add table
-todo: add p-values
-todo: add figure
-
-If I was choosing a key estimation system to deploy in the wild and my main goal was accuracy, this is the one I'd choose. Though at this point, the hybrid system is highly optimized using insights gained from this specific dataset. So it might be best to confirm that these results hold on a validation set before deployment.
+The fourth row of the table above shows the performance of this system. It achieves a small, but noticeable performance improvement over the hybrid system which corrects parallel errors only. If I was choosing a key estimation system to deploy in the wild and my main goal was accuracy, I'd choose this one based on its metrics. Though at this point, the hybrid system is highly optimized using insights gained from this specific dataset. So it might be best to confirm that these results hold on a validation set before deployment.
 
 ### *What went right?*
 
@@ -140,15 +136,21 @@ It's cool that the Chord-LLM methods perform well, even out-performing a relativ
 
 However, I do think that the chord recognizer is actually what's doing most of the work here. The LLM does a good job here because the chords its fed carry strong signal for predicting key. It's possible that a much simpler machine that processes chords could achieve comparable performance here just because a song's chords are a good *feature representation* for this task. But what's nice about using a pre-trained LLM is that it doesn't require any additional training, and can still make solid predictions under ambiguity.
 
-It's also interesting that Chord-LLM and AllConv differ enough such that a simple hybrid system improves on the performance of both. Especially so given that both models are fundamentally CNN-based (AllConv and the chord recognizer for the Chord-LLM systems both use CNN's to process the input audio spectrogram). One possible explanation for this is that the Chord-LLM systems rely heavily on an LLM's parametric knowledge of music theory, while AllConv is more grounded in audio analysis. I've already discussed how crucial music theory can be for determining the key of a passage, but there are certainly cases where the harmony is not enough to specify a passage's key. Adding an additional layer that is closer to the audio can help in these situations.
+It's also interesting that Chord-LLM and AllConv differ enough such that a simple hybrid system improves on the performance of both. Especially so given that both models are fundamentally CNN-based (AllConv and the chord recognizer for the Chord-LLM systems both use CNN's to process the input audio spectrogram). My *theory* for the cause of this difference is that the Chord-LLM systems are high level (relying heavily on an LLM's parametric knowledge of music theory) while AllConv is low level (deriving information directly from the audio). I've already discussed how crucial harmony (a high level view of music) is for determining the key of a passage. But there are just certain situations where a song's chords are uninformative, and being closer to the audio in these situations helps.
 
-### *What went wrong?*
+### *A musically-informed error analysis*
 
-Still, the best system only gets the key correct about 71% of the time. That's surprisingly poor performance.
+Still, the best system only gets the key correct about 71% of the time. That's surprisingly poor performance for a task that doesn't seem *that* challenging.
 
+### *Wrapping up*
 
-### *Drawbacks*
+There's probably ways to push the performance of key estimators even higher, but I think this is a good place to leave it for now. We saw that an LLM that processes a song's chords (and chroma) performs better than a tasked-optimized deep learning method, and that a hybrid system combining both methods performs even better still. If someone else wanted to continue this work, they might consider some of the following directions:
 
-Compute inefficiency - maybe cheaper LLMs can do this task
-Worth testing out different chord recognizers?
-adding other features to the LLM prompt?
+- **Better subsystems:** I stuck with the same chord recognizer for the whole experiment, mainly because it was easy to get up-and-running. But its not even the best-performing one these days. Also, I used a relatively cheap and non-frontier LLM. As mentioned above, I did a quick test on a subset of data using a more powerful model, but found that the performance was nearly identical. Still, you could maybe eke out slightly better metrics by using a better chord recognizer and stronger LLM with very high reasoning.
+- **Other features:** chord charts make sense as a feature representation for LLMs. But the latest frontier models are quite powerful, and could probably handle even more complex representations of music. Something like a MIDI representation of the main melody would complement the chord representation well, and its worth testing whether this might further improve performance.
+
+- **Compute efficiency:** LLMs are heavy duty, and are probably overkill for this task. A simpler ML method might be enough to infer key from chords. And a whole lot cheaper. I think it would be interesting to see the gap between a strong ML method and the LLM. This sort of measures the utility of the LLM's explicit music theory knowledge and edge-case resistance -- i.e. what would be challenging to learn from a traditional lablled dataset.
+
+The other lesson here is about the task of key estimation itself. As we saw earlier, there's plenty of music that doesn't fit the 24-class classification setup well. This could be for a number of reasons -- there's a tonic but the quality isn't exactly major or minor, the harmony is highly chromatic or non-functional, there's no clear harmony at all, there's bi-tonality, and so on. This list doesn't even include the most-complicating factor of all: key shifts. The FMAK dataset has been carefully curated to include (mostly) songs with a single key. But this just isn't realistic for music *in the wild.*
+
+I think this helps explain the low popularity of key estimation among MIR practitioners. Since the task doesn't work for a lot of music, key estimation just isn't that useful. One answer to this is just to avoid working on key estimation. But we could also try to improve the task definition -- include a more expansive set of possible key qualities, annotate full songs with key shifts marked, allow for the possiblibility of multiple keys at once, etc.. I'll leave that for the next project, though.
