@@ -67,7 +67,7 @@ I chose two baseline estimators to compare the Chords-LLM method to. The first i
 
 todo: KS key profiles
 
-The other baseline is more modern deep learning approach -- the AllConv model as implemented in `madmom`. This is a CNN-based model designed specifically to perform well across musical genre (remember that early systems were traine/evaluated mostly on EDM music).
+The other baseline is more modern deep learning approach -- the AllConv model as implemented in `madmom`. This is a CNN-based model designed specifically to perform well across musical genre (remember that early systems were trained/evaluated mostly on EDM music).
 
 ### *Running the numbers*
 
@@ -82,7 +82,7 @@ todo: MIREX metric table https://music-ir.org/mirex/wiki/2021:Audio_Key_Detectio
 | Chord-LLM | 0.6846*** | 0.6617* | 0.7291 |
 | Chord-LLM w/ Chroma | 0.6868*** | 0.6683*** | 0.7336* |
 
-: Performance comparison of baselines with Chord-LLM methods. Asterisks indicate performance better than the best baseline (AllConv): * $p < 0.05$, ** $p < 0.01$, *** $p < 0.001$ {#tbl-performance}
+: Performance comparison of baselines with Chord-LLM methods. <br> Asterisks indicate performance better than the best baseline (AllConv): <br> * $p < 0.05$, ** $p < 0.01$, *** $p < 0.001$ {#tbl-performance}
 
 todo: double check these numbers
 
@@ -142,20 +142,24 @@ It's also interesting that Chord-LLM and AllConv differ enough such that a simpl
 
 Still, the best system only gets the key correct about 71% of the time. That's surprisingly poor performance for a task that doesn't seem *that* challenging. To get a better sense of what's going on here, I took a random sample of tracks which the best system predicted incorrectly, and listened carefully to see what went wrong:
 
-| Track ID | Actual Key | Prediction | Possible Explanation |
-| :--- | :--- | :--- | :--- |
-| 1920 | G major | C major | The chord representation is ambiguous -- all the chords belong to both G and C major. Unfortunately, the LLM chose the wrong one. AllConv gets this one correct. |
-| 1942 | F minor | F# major | The song is basically just alternating between Gb and F power chords. To me, the F sounds a little bit more like home, but one could argue for either. |
-| 4686 | G major | F# minor | The tonic is clearly F# (which the hybrid system chooses correctly), so this seems to be mislabelled. However, the quality is undetermined and vague -- I would prefer *major* if forced to choose. |
-| 5078 | E major | D major | This is a pretty complex song where the A section is sort of E7 bluesy (with some chromaticism) and the B section is a non-functional trip between A:maj, C:maj, and E:min. Neither AllConv nor the LLM gets it right. |
-| 6460 | B minor | A major | This is essentially in B dorian. While the *B minor*-vibe dominates, the chords are technically diatonic to *A major*, so the LLM picks that over *B minor*. AllConv gets this one correct. |
-| 6669 | C major | C minor | This song is really just a C drone with some chromatic (kinda lydian) stuff on top. I don't think *C major* tells the whole story here, but I think it's more correct than the hybrid's *C minor*. The lack of clear harmony means the hybrid system uses AllConv's prediction, but it doesn't have much to go on. |
-| 9866 | D major | Bb major | The recording is pretty noisy, and the harmony is quite non-functional with one section loosely floating about Db:maj and another grounded in Bb:maj. The *D major* label is not a good choice here, though I would be hard pressed to say what is. |
-| 10415 | Eb major | Db major | This is a straight up mislabelling. AllConv, the LLM, and I all agree that *Db major* is the key here. |
-| 12000 | F# major | B major | This is basically someone noodling on an electric piano in a *B major*-ish vibe. The label is wrong. |
-| 16120 | Ab minor | Eb major | The tuning is a bit "free" on this one since the only instrument is voice. I don't love the label because I think the tonic is closer to G than Ab. Regardless, the chord representation alternates between G:maj and Eb:maj, which is unfortunate since G:min is a better choice here (the third is underspecified). This throws off the LLM and AllConv too. |
+| Track ID | Actual | Predicted | Possible Explanation | |
+| :--- | :--- | :--- | :--- | :--- |
+| 1920 | G major | C major | The chord representation is ambiguous -- all the chords belong to both G and C major. Unfortunately, the LLM chose the wrong one. AllConv gets this one correct. | 🤖 |
+| 1942 | F minor | F# major | The song is basically just alternating between Gb and F power chords. To me, the F sounds a little bit more like home, but one could argue for either. | 👀 |
+| 4686 | G major | F# minor | The tonic is clearly F# (which the hybrid system chooses correctly), so this seems to be mislabelled. However, the quality is undetermined and vague -- I would prefer *major* if forced to choose. | 🏷️ 👀 |
+| 5078 | E major | D major | This is a pretty complex song where the A section is sort of E7 bluesy (with some chromaticism) and the B section is a non-functional trip between A:maj, C:maj, and E:min. Neither AllConv nor the LLM gets it right. | 🤖 |
+| 6460 | B minor | A major | This is essentially in B dorian. While the *B minor*-vibe dominates, the chords are technically diatonic to *A major*, so the LLM picks that over *B minor*. AllConv gets this one correct. | 🤖 |
+| 6669 | C major | C minor | This song is really just a C drone with some chromatic (kinda lydian) stuff on top. I don't think *C major* tells the whole story here, but I think it's more correct than the hybrid's *C minor*. The lack of clear harmony means the hybrid system uses AllConv's prediction, but it doesn't have much to go on. | 👀 |
+| 9866 | D major | Bb major | The recording is pretty noisy, and the harmony is quite non-functional with one section loosely floating about Db:maj and another grounded in Bb:maj. The *D major* label is not a good choice here, though I would be hard pressed to say what is. | 🏷️ 👀 |
+| 10415 | Eb major | Db major | This is a straight up mislabelling. AllConv, the LLM, and I all agree that *Db major* is the key here. | 🏷️ |
+| 12000 | F# major | B major | This is basically someone noodling on an electric piano in a *B major*-ish vibe. The label is wrong. | 🏷️ |
+| 16120 | Ab minor | Eb major | The tuning is a bit "free" on this one since the only instrument is voice. I don't love the label because I think the tonic is closer to G than Ab. Regardless, the chord representation alternates between G:maj and Eb:maj, which is unfortunate since G:min is a better choice here (the third is underspecified). This throws off the LLM and AllConv too. | 🤖 |
 
-: {#tbl-hybrid-errors tbl-colwidths="[15,15,15,55]"}
+: Qualitative breakdown of errors made by the best hybrid system. <br> 🤖 = Genuine system mistake, 🏷️ = Mislabelling, 👀 = Label (even if corrected) doesn't tell the whole story {#tbl-hybrid-errors tbl-colwidths="[11,11,11,60,7]"}
+
+This analysis is pretty informative. First off, there are some legitimate failures of the hybrid system. 2/10 errors occur because the chord representation is ambiguous. In those cases, AllConv predicts correctly. Unfortunately, there's not an easy heuristic --- oh wait, there probably is...
+
+should test another hybrid system that goes with AllConv when chord representation is ambiguous. Though to be fair, it probably is often ambigious. so unclear whether this will help fully
 
 ### *Wrapping up*
 
@@ -163,8 +167,7 @@ There's probably ways to push the performance of key estimators even higher, but
 
 - **Better subsystems:** I stuck with the same chord recognizer for the whole experiment, mainly because it was easy to get up-and-running. But its not even the best-performing one these days. Also, I used a relatively cheap and non-frontier LLM. As mentioned above, I did a quick test on a subset of data using a more powerful model, but found that the performance was nearly identical. Still, you could maybe eke out slightly better metrics by using a better chord recognizer and stronger LLM with very high reasoning.
 - **Other features:** chord charts make sense as a feature representation for LLMs. But the latest frontier models are quite powerful, and could probably handle even more complex representations of music. Something like a MIDI representation of the main melody would complement the chord representation well, and its worth testing whether this might further improve performance.
-
-- **Compute efficiency:** LLMs are heavy duty, and are probably overkill for this task. A simpler ML method might be enough to infer key from chords. And a whole lot cheaper. I think it would be interesting to see the gap between a strong ML method and the LLM. This sort of measures the utility of the LLM's explicit music theory knowledge and edge-case resistance -- i.e. what would be challenging to learn from a traditional lablled dataset.
+- **Compute efficiency:** LLMs are heavy duty, and are probably overkill for this task. A simpler ML method might be enough to infer key from chords. And a whole lot cheaper. I think it would be interesting to see the gap between a strong ML method and the LLM. This sort of measures the utility of the LLM's explicit music theory knowledge and edge-case resistance -- i.e. what would be challenging for a traditional ML method to learn from a lablled dataset.
 
 The other lesson here is about the task of key estimation itself. As we saw earlier, there's plenty of music that doesn't fit the 24-class classification setup well. This could be for a number of reasons -- there's a tonic but the quality isn't exactly major or minor, the harmony is highly chromatic or non-functional, there's no clear harmony at all, there's bi-tonality, and so on. This list doesn't even include the most-complicating factor of all: key shifts. The FMAK dataset has been carefully curated to include (mostly) songs with a single key. But this just isn't realistic for music *in the wild.*
 
