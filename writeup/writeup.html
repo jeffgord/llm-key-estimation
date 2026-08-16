@@ -109,12 +109,27 @@ window.Quarto = {
 </header>
 
 
-<p><em>I wanted to see whether large language models could reliably estimate musical key from just the output of a chord recognizer. I tested this out using the FMAK dataset, and compared to two baselines. Turns out the LLM-driven method is pretty good at this task, which is surprising given how little information the LLM uses to make a prediction. See the <a href="https://github.com/jeffgord/llm-key-estimation">GitHub Repo</a> for code.</em></p>
-<p><em>This research was adapted from my final project completed for GY-asdf Music Information Retrieval taught by Brian McFee at NYU. The methods and writeup presented here are completely my own, though the experimental setup and baseline evaluations come from the class project. Therefore, credit is also due to my team members: Shan Shan Tu, Jason Lee, and Teddy Ryles.</em> todo: get course number, and confirm team member spelling.</p>
+<style>
+figcaption { text-align: center; }
+</style>
+<p><em>I wanted to see whether large language models could reliably estimate musical key from just the output of a chord recognizer. I tested this out using the FMAK dataset, and compared to two baselines. Turns out the LLM-driven method is pretty good at this task, which is surprising given how little information the LLM uses to make a prediction. Further, if we combine the LLM method with a strong deep learning approach, we will get a hybrid system that outperforms both.</em></p>
+<p><em>This research was adapted from my final project completed for MPATE-GE 2623 Music Information Retrieval taught by Brian McFee at NYU. The methods and writeup presented here are completely my own, though the experimental setup and baseline evaluations come from the class project. Therefore, credit is also due to my team members: Shan Shan Tu, Jason Lee, and Teddy Ryles.</em></p>
+<p><em>To reproduce the results and analyses detailed here, see the <a href="https://github.com/jeffgord/llm-key-estimation">GitHub Repo</a>.</em></p>
 <hr>
 <section id="what-is-key-estimation-and-why-is-it-hard" class="level3">
 <h3 class="anchored" data-anchor-id="what-is-key-estimation-and-why-is-it-hard"><em>What is key estimation and why is it hard?</em></h3>
-<p>Straightforwardly, key estimation is the task of identifying the key of a piece of a music (as in having a computer “listen” to a song and say, ‘ah, this sounds like G major’). The output of a key estimation system is one of 24 classes – 12 pitch classes * 2 qualities (major or minor). Notably, key estimation is a rather underexplored topic in music information retrieval (TODO: provide some evidence for this). This is probably because its applications are limited. More popular MIR topics like beat detection and chord recognition are vital for stuff like automatic transcription or real-time machine accompaniment. But there are far fewer uses for estimating the key of a song, aside from metadata collection perhaps.</p>
+<div id="fig-key-estimation-task" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-key-estimation-task-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/key-estimation-task.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-key-estimation-task-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Key estimation
+</figcaption>
+</figure>
+</div>
+<p>Straightforwardly, key estimation is a classic music information retrieval (MIR) problem, where a computer is tasked with identifying the key of a musical piece (see <a href="#fig-key-estimation-task" class="quarto-xref">Figure&nbsp;1</a>). Key estimation is typically formulated as a multi-class classifcation problem, where the output of a key estimator is one of 24 classes (i.e.&nbsp;one of 12 roots * one of 2 qualities – major or minor)</p>
+<p>Key estimation is a rather underexplored problem in MIR, at least compared to other popular MIR tasks (TODO: provide some evidence for this). This is probably because its applications are limited. More popular MIR topics like beat detection and chord recognition are vital for stuff like automatic transcription or real-time machine accompaniment. But there are far fewer uses for estimating the key of a song, aside from metadata collection perhaps.</p>
 <p>todo: figure of key estimation</p>
 <p>Still, it’s an interesting problem to work on. From a musical perspective, defining a song’s key is a rather dubious task. Music is often about shifting between keys, or maybe being in one key but gesturing at another (like when the bridge of a jazz tune “modulates” to the IV). So it’s not always straightforward to say exactly what the key of a song is with the conciseness that a multi-class classification setup demands.</p>
 <p>Because key estimation is so underexplored, the available datasets are fairly small and quirky. For a while, the most popular datasets were GiantSteps Key (600 tracks) and Beatport EDM Key (1,486 tracks), both of which include only EDM songs. This lack of data, both in terms of quantity and diversity, is a big issue for machine learning approaches. When humans figure out a song’s key, they are usually thinking about very high level musical information – e.g.&nbsp;looking at which chord ends a section, finding V-I cadences, etc.. It seems unlikely that an algorithm could uncover these kinds of complex, high-level patterns from limited data.</p>
