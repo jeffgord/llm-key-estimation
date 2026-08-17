@@ -1,0 +1,27 @@
+@InProceedings{pmlr-v303-carone26a,
+  title =      {LLMs can read music, but struggle to hear it. An evaluation of core music perception tasks},
+  author =       {Carone, Brandon James and Roman, Iran R. and Ripoll{\'e}s, Pablo},
+  booktitle =      {Proceedings of Machine Learning Research},
+  pages =      {1--27},
+  year =      {2026},
+  editor =      {Herremans, Dorien and Bhandari, Keshav and Roy, Abhinaba and Colton, Simon and Barthet, Mathieu},
+  volume =      {303},
+  series =      {Proceedings of Machine Learning Research},
+  month =      {26 Jan},
+  publisher =    {PMLR},
+  pdf =      {https://raw.githubusercontent.com/mlresearch/v303/main/assets/carone26a/carone26a.pdf},
+  url =      {https://proceedings.mlr.press/v303/carone26a.html},
+  abstract =      {Multimodal Large Language Models (MLLMs) claim "musical understanding," yet most evaluations conflate listening with score reading. We benchmark three SOTA LLMs (Gemini 2.5 Pro, Gemini 2.5 Flash, and Qwen2.5-Omni) across three core music skills: Syncopation Scoring (rhythm perception), Transposition Detection (melody perception), and Chord Quality Identification (harmony perception). Moreover, we separate three sources of variability: (i) perceptual limitations (by contrasting audio recordings vs. symbolic MIDI inputs), (ii) exposure to prior examples (zero- vs. few-shot manipulations), and (iii) reasoning strategies (Standalone, Chain of Thought, LogicLM). For the latter we adapt LogicLM, a framework combining LLMs with symbolic solvers to perform structured reasoning. In LogicLM, LLMs act as perceptual formulators, generating strict, machine-checkable schemas (onset grids, interval sequences) that deterministic solvers execute with self-refinement. Our results reveal a clear perceptual gap: models perform near ceiling on MIDI but show substantial accuracy drops on audio. Reasoning and few-shot prompting offer minimal gains. This is expected for MIDI, where performance reaches saturation, but more surprising for audio, where LogicLM, despite near-perfect MIDI accuracy, remains notably brittle. Among models, Gemini Pro achieves the highest performance across most conditions. Transposition yields the highest accuracies across models, while Chord Identification scores slightly below Syncopation. Overall, current systems reason well over symbols (MIDI) but do not yet "listen" reliably from audio, with reasoning strategies having little impact over accuracy. Our method and dataset make the perception-reasoning boundary explicit and offer actionable guidance for building robust, audio music systems.}
+}
+
+@inproceedings{morais2026modality,
+  title     = {Investigating Modality Contribution in Audio LLMs for Music},
+  author    = {Morais, Giovana and Fuentes, Magdalena},
+  booktitle = {ICASSP 2026 - 2026 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+  pages     = {3496--3500},
+  year      = {2026},
+  address   = {Barcelona, Spain},
+  publisher = {IEEE},
+  doi       = {10.1109/ICASSP55912.2026.11463350},
+  url       = {https://doi.org/10.1109/ICASSP55912.2026.11463350}
+}

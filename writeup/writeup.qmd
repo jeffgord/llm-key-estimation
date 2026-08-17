@@ -2,10 +2,13 @@
 title: "Using LLMs for Key Estimation"
 author: "Jeffrey Gordon"
 date: "2026-06-27"
+bibliography: references.bib
+csl: ieee.csl
 ---
 
 <style>
 figcaption { text-align: center; }
+.roman { font-family: Georgia, "Times New Roman", serif; font-variant: small-caps; }
 </style>
 
 *I wanted to see whether large language models could reliably estimate musical key from just the output of a chord recognizer. I tested this out using the FMAK dataset, and compared to two baselines. Turns out the LLM-driven method is pretty good at this task, which is surprising given how little information the LLM uses to make a prediction. Further, if we combine the LLM method with a strong deep learning approach, we will get a hybrid system that outperforms both.*
@@ -16,37 +19,80 @@ figcaption { text-align: center; }
 
 ---
 
+todo: replace all sharps and flats with correct symbols.
+
 ### *What is key estimation and why is it hard?*
 
 ![Key estimation](figs/key-estimation-task.svg){#fig-key-estimation-task}
 
-Straightforwardly, key estimation is a classic music information retrieval (MIR) problem, where a computer is tasked with identifying the key of a musical piece (see @fig-key-estimation-task). Key estimation is typically formulated as a multi-class classifcation problem, where the output of a key estimator is one of 24 classes (i.e. one of 12 roots * one of 2 qualities -- major or minor)
+Key estimation is a classic music information retrieval (MIR) problem, where a computer is tasked with identifying the key of a musical piece (see @fig-key-estimation-task). Usually, key estimation is formulated as a straightforward multi-class classification problem, where the output of a key estimator is one of 24 classes: one of 12 roots × one of 2 qualities (major or minor). Enharmonic spellings (i.e. *Db minor* vs. *C# minor*) are considered to be equivalent, since these differences can't be discerned from the audio alone.
 
-Key estimation is a rather underexplored problem in MIR, at least compared to other popular MIR tasks (TODO: provide some evidence for this). This is probably because its applications are limited. More popular MIR topics like beat detection and chord recognition are vital for stuff like automatic transcription or real-time machine accompaniment. But there are far fewer uses for estimating the key of a song, aside from metadata collection perhaps. 
+Notably, key estimation is a somewhat underexplored problem in MIR, at least compared to other popular MIR tasks (TODO: provide some evidence for this). One possible explanation for this is that the applications of a key estimator are relatively limited. Beat detectors and chord recognizers are vital for stuff like automatic transcription or real-time machine accompaniment. But there are far fewer uses for estimating the key of a song, aside from metadata collection perhaps.
 
-todo: figure of key estimation
+Still, it's an interesting problem to work on. From a musical perspective, defining a song's key is a rather dubious task. Music is often about shifting between keys, or maybe being in one key but gesturing at another (like when the bridge of a jazz tune "modulates" to the <span class="roman">IV</span>). So it's not always straightforward to say exactly what the key of a song is with the conciseness that a multi-class classification setup demands.
 
-Still, it's an interesting problem to work on. From a musical perspective, defining a song's key is a rather dubious task. Music is often about shifting between keys, or maybe being in one key but gesturing at another (like when the bridge of a jazz tune "modulates" to the IV). So it's not always straightforward to say exactly what the key of a song is with the conciseness that a multi-class classification setup demands.
-
-Because key estimation is so underexplored, the available datasets are fairly small and quirky. For a while, the most popular datasets were GiantSteps Key (600 tracks) and Beatport EDM Key (1,486 tracks), both of which include only EDM songs. This lack of data, both in terms of quantity and diversity, is a big issue for machine learning approaches. When humans figure out a song's key, they are usually thinking about very high level musical information -- e.g. looking at which chord ends a section, finding V-I cadences, etc.. It seems unlikely that an algorithm could uncover these kinds of complex, high-level patterns from limited data.
+Because key estimation is underexplored, the available datasets are fairly small and quirky. For a while, the most popular datasets were GiantSteps Key (600 tracks) and Beatport EDM Key (1,486 tracks), both of which include only EDM songs. This lack of data, both in terms of quantity and diversity, is a big issue for machine learning approaches. When humans figure out a song's key, they are usually thinking about very high level musical information -- e.g. looking at which chord ends each section, finding <span class="roman">V-I</span> cadences, etc.. It seems unlikely that an algorithm could uncover these kinds of complex, high-level patterns from limited data.
 
 ### *Using LLMs for Key Estimation*
 
 One way to deal with a lack of labeled data is to rely in part on a foundation model, which trains on a large corpus of unlabeled data in a self-supervised fashion. The hope is that this process encourages your model to learn generalizable representations, which can then be fine-tuned for many different tasks with just a small amount of labeled data. Indeed, a pre-trained music foundation model like MERT would probably work well for key estimation.
 
-LLMs are another kind of foundation model which have been *quite* popular lately. And with so much money poured into their by development by frontier labs, they should be good at lots of different tasks. But the problem with using LLMs for music tasks is that they operate on text, not audio. So to use them for key estimation, we need some way to represent music as text.
+LLMs are another kind of foundation model which have been *quite* popular lately. And with so much money poured into their by development by frontier labs, they should be good at lots of different tasks. But the problem with using LLMs for music tasks is that they operate on text, not audio.[^text-not-audio] So to use them for key estimation, we need some way to represent music as text.
+
+[^text-not-audio]: You might point out that we have strong multimodal models nowadays, which actually do process audio. Unfortunately, it turns out that recent multimodal LLMs are pretty bad at MIR (see @pmlr-v303-carone26a and @morais2026modality). And since it's expensive to process audio tokens, I just didn't think it worth my time/money to focus on. Still, an interesting project might be to benchmark multimodal LLMs on this task (or similar MIR tasks), and track their improvement over time.
 
 ###  *Chord Recognizers: Music → Text*
 
-In fact, there a many ways to represent music as text, though all of them are lossy. For instance, you could describe it: *this song sounds like a summer's day, but ruined by violins*. Or you could use music notation that has somehow been converted to words: *play D4, E4, F4, G4 as eigbth notes, E4 as a quarter note, then C4 and E4 as eighth notes again, oh and hold out the E4 why don't you*. For a whole song with multiple instruments, this would quickly get out of hand. Even for *Claude Fable*. 
+In fact, there a many ways to represent music as text, though all of them are lossy. For instance, you could just describe it: *this song sounds like a summer's day, but ruined by violins*. Or you could use music notation that has somehow been converted to words, such as musicXML:
 
-todo: change above example to MusicXML
+```xml
+<note>
+  <pitch><step>G</step><octave>4</octave></pitch>
+  <duration>1</duration>
+  <type>eighth</type>
+  <lyric><syllabic>single</syllabic><text>Hap-</text></lyric>
+</note>
+<note>
+  <pitch><step>G</step><octave>4</octave></pitch>
+  <duration>1</duration>
+  <type>eighth</type>
+  <lyric><syllabic>single</syllabic><text>py</text></lyric>
+</note>
+<note>
+  <pitch><step>A</step><octave>4</octave></pitch>
+  <duration>2</duration>
+  <type>quarter</type>
+  <lyric><syllabic>single</syllabic><text>birth-</text></lyric>
+</note>
+...
+```
 
-So, we need a compact representation with task-relevant information. We've already discussed how key can often be inferred from a song's harmony and structure, so a good choice might be a chord chart (like iReal Pro style). We don't yet have machines that can reliably write out a song's chart with labeled sections and all. But we can get pretty close with a chord recognizer. A chord recognizer processes music, and spits out its best guess as to what chords are happening and for how long, like so:
+For a whole song with multiple instruments, this would quickly get out of hand, though. And there's a lot of information in this representation that isn't useful for our task (like lyrics).
 
+So, we need a compact representation with task-relevant information. We've already discussed how key can often be inferred from a song's harmony and structure, so a good choice might be a chord chart (like [iReal Pro](https://www.irealpro.com/) style). Unfortunately, we don't yet have machines that can reliably write out a song's chart with labeled sections and all. But we can get pretty close with a chord recognizer, which processes music, and spits out its best guess as to what chords are happening and for how long. Here's an example of what a chord recognizer outputs on a real 60s snippet of audio:
 
+```
+0.0	8.870022675736962	N
+8.870022675736962	16.6487074829932	Ab:maj
+16.6487074829932	17.34530612244898	F#:maj
+17.34530612244898	19.481541950113378	B:maj
+19.481541950113378	21.478458049886623	A:maj
+21.478458049886623	29.83764172335601	Ab:maj
+29.83764172335601	31.90421768707483	B:maj
+31.90421768707483	33.97079365079365	A:maj
+33.97079365079365	42.32997732426304	Ab:maj
+42.32997732426304	44.489433106575966	B:maj
+44.489433106575966	46.48634920634921	A:maj
+46.48634920634921	56.88888888888889	Ab:maj
+56.88888888888889	58.978684807256236	B:maj
+58.978684807256236	60.00036281179138	C#:min
+```
 
-Obviously, we lose some information which might be important for key estimation by doing this (such as the main melody). But it looks like it might still contain enough information to be useful, and it's plenty compact enough for an LLM to work with.
+Obviously, we lose some information which might be important for key estimation by doing this (such as the main melody). But it looks like it might still contain enough information to be useful, and it's much more compact than the musicXML. Before feeding to an LLM, it's probably also a good idea to apply a bit of pre-processing:
+
+```
+N 8.9s, Ab:maj 7.8s, F#:maj 0.7s, B:maj 2.1s, A:maj 2.0s, Ab:maj 8.4s, B:maj 2.1s, A:maj 2.1s, Ab:maj 8.4s, B:maj 2.2s, A:maj 2.0s, Ab:maj 10.4s, B:maj 2.1s, C#:min 1.0s
+```
 
 ### *Putting it together*
 
