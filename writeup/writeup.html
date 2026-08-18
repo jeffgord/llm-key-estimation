@@ -239,7 +239,7 @@ Figure&nbsp;1: Key estimation
 </section>
 <section id="putting-it-together" class="level3">
 <h3 class="anchored" data-anchor-id="putting-it-together"><em>Putting it together</em></h3>
-<p>So, to estimate the key for a given piece of music, I first run the audio through a chord recognizer. For this experiment, I used one from 2019 (<span class="citation" data-cites="jiang2019large"><a href="#ref-jiang2019large" role="doc-biblioref">[3]</a></span>) because it was quick to get running from the authors’ <a href="https://github.com/music-x-lab/ISMIR2019-Large-Vocabulary-Chord-Recognition">repo</a>, and holds up pretty well against more modern approaches as evaluated by <a href="https://music-ir.org/mirex/wiki/2025:Audio_Chord_Estimation_Results">MIREX 2025</a>. I then feed the output of the chord recognizer to an LLM. The prompt looks roughly like this:</p>
+<p>So, to estimate the key for a given piece of music, the first step involves running audio through a chord recognizer. For this experiment, I used one from 2019 (<span class="citation" data-cites="jiang2019large"><a href="#ref-jiang2019large" role="doc-biblioref">[3]</a></span>) because it was quick to get running from the authors’ <a href="https://github.com/music-x-lab/ISMIR2019-Large-Vocabulary-Chord-Recognition">repo</a>, and holds up pretty well against more modern approaches as evaluated by <a href="https://music-ir.org/mirex/wiki/2025:Audio_Chord_Estimation_Results">MIREX 2025</a>. I then feed the output of the chord recognizer to an LLM. The prompt looks roughly like this:</p>
 <blockquote class="blockquote">
 <p>Tell me what key you think this song is in based on its chords: <br> {CHORDS}</p>
 <p>Beware that these chords came from a chord recognizer – not a lead sheet – so there may be mistakes or confusing enharmonic spellings. Also, long songs have been trimmed to 60s in length, so the chords may end in the middle of a phrase.</p>
@@ -251,7 +251,7 @@ Figure&nbsp;1: Key estimation
 </section>
 <section id="experimental-setup" class="level3">
 <h3 class="anchored" data-anchor-id="experimental-setup"><em>Experimental Setup</em></h3>
-<p>To figure out whether this system works at all, we have to test it on tracks for which we already know the key, and compare its estimates to those of other systems. I chose the relatively recently compiled FMAK dataset for this purpose <span class="citation" data-cites="wong2023fmak"><a href="#ref-wong2023fmak" role="doc-biblioref">[4]</a></span>, which includes key annotations for 5,489 songs from the Free Music Archive <span class="citation" data-cites="defferrard2017fma"><a href="#ref-defferrard2017fma" role="doc-biblioref">[5]</a></span>. I opted for the v2 annotations (compiled as part of <span class="citation" data-cites="kong2024stone"><a href="#ref-kong2024stone" role="doc-biblioref">[6]</a></span>), which includes corrections for some identified mislabelings. While it’s not perfect (more on this later), this dataset far surpasses other key estimation datasets in terms of size and musical diversity (see figure <a href="#fig-dataset-overview" class="quarto-xref">Figure&nbsp;2</a>), so it’s better at evaluating an algorithm’s performance "in the wild."</p>
+<p>To figure out whether this system works at all, we have to test it on tracks for which we already know the key, and compare its estimates to those of other systems. I chose the relatively recently compiled FMAK dataset for this purpose <span class="citation" data-cites="wong2023fmak"><a href="#ref-wong2023fmak" role="doc-biblioref">[4]</a></span>, which includes key annotations for 5,489 songs from the Free Music Archive <span class="citation" data-cites="defferrard2017fma"><a href="#ref-defferrard2017fma" role="doc-biblioref">[5]</a></span>. I opted for the v2 annotations (compiled as part of <span class="citation" data-cites="kong2024stone"><a href="#ref-kong2024stone" role="doc-biblioref">[6]</a></span>), which includes corrections for some identified mislabelings. While it’s not perfect (more on this later), this dataset far surpasses other key estimation datasets in terms of size and musical diversity (see <a href="#fig-dataset-overview" class="quarto-xref">Figure&nbsp;2</a>), so it’s better at evaluating an algorithm’s performance "in the wild."</p>
 <div id="fig-dataset-overview" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-dataset-overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -281,7 +281,7 @@ Figure&nbsp;2: Key estimation dataset size comparison and genre diversity within
 </figcaption>
 </figure>
 </div>
-<p>I chose two baseline estimators to compare the Chords-LLM method to. The first is the Krumhansl-Schmuckler key-finding algorithm (KS, hereafter) <span class="citation" data-cites="temperley1999whats"><a href="#ref-temperley1999whats" role="doc-biblioref">[7]</a></span>. This is a relatively simple DSP method which involves first computing how much of each note is present in the passage of music (by averaging a chromagram over time). Then, these note activations are compared to 24 key profiles, selecting the most similar profile as the key estimate. The key profiles (shown below) come from a music psychology experiment where listeners were prompted to identify how well different tones continued a sequence of notes.</p>
+<p>I chose two baseline estimators to compare the Chords-LLM method to. The first is the Krumhansl-Schmuckler key-finding algorithm (KS, hereafter) <span class="citation" data-cites="temperley1999whats"><a href="#ref-temperley1999whats" role="doc-biblioref">[7]</a></span>. This is a relatively simple DSP method which involves first computing how much of each note is present in the passage of music (by averaging a chromagram over time). Then, these note activations are compared to 24 key profiles, selecting the most similar profile as the key estimate. The key profiles (<a href="#fig-key-profiles" class="quarto-xref">Figure&nbsp;3</a>) come from a music psychology experiment where listeners were prompted to identify how well different tones continued a sequence of notes.</p>
 <div id="fig-key-profiles" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-key-profiles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -292,7 +292,7 @@ Figure&nbsp;3: Krumhansl-Kessler key profiles for <em>C major</em> (top) and <em
 </figcaption>
 </figure>
 </div>
-<p>The other baseline is more modern deep learning approach – the AllConv model <span class="citation" data-cites="korzeniowski2018genre"><a href="#ref-korzeniowski2018genre" role="doc-biblioref">[8]</a></span> as implemented in <code>madmom</code> <span class="citation" data-cites="madmom"><a href="#ref-madmom" role="doc-biblioref">[9]</a></span>. This is a CNN-based model designed specifically to perform well across musical genre (remember that early systems were trained/evaluated mostly on EDM music).</p>
+<p>The other baseline is more modern deep learning approach – the AllConv model <span class="citation" data-cites="korzeniowski2018genre"><a href="#ref-korzeniowski2018genre" role="doc-biblioref">[8]</a></span> as implemented in <code>madmom</code> <span class="citation" data-cites="madmom"><a href="#ref-madmom" role="doc-biblioref">[9]</a></span>. This is a CNN-based model designed specifically to perform well across musical genre (remember that early systems were trained/evaluated mostly on EDM music). While this model is nearly 10 years old at this point, many consider it still to be the SOTA key estimator. Very recently, large-scale SSL models like S-KEY <span class="citation" data-cites="kong2025skey"><a href="#ref-kong2025skey" role="doc-biblioref">[10]</a></span> have shown results on-par or just slightly better than AllConv.</p>
 <p>Notably, FMAK labels indicate the key for only the first 60 seconds of audio in each track. Therefore, I trimmed the tracks to 60 seconds before running through each of the key estimators.</p>
 </section>
 <section id="running-the-numbers" class="level3">
@@ -515,7 +515,15 @@ Table&nbsp;3: Qualitative breakdown of errors made by the best hybrid system. <b
 </div>
 <p>This analysis is pretty informative. First off, there are some legitimate failures of the hybrid system. 2/10 errors occur because the chord representation is ambiguous, and the AllConv prediction was actually correct. I experimented with trying to detect ambiguous harmony to use the AllConv prediction instead in these situations. Unfortunately, I found that too many songs have ambiguous harmony, and that over-relying on AllConv causes performance to decrease.</p>
 <p>Another trend is the presence of annotation errors (4/10 tracks). This isn’t a knock on the dataset curators – it’s a huge task to listen to over 5,000 songs and determine their keys. But just something to be aware of. It’s possible that fixing the mislabellings might result in improvements to metrics reported in previous sections, but I doubt that it would change which system performs best comparatively.</p>
-<p>Even when I agree with the label, there are still situations where assigning a label feels a bit problematic, such as songs with non-functional harmony, or which lack any clear harmony at all. For example, track 6669 is centered around a C drone. <em>C major</em> is probably the best label when constrained to the 24-class setup, but it’s not really a good description of this passage’s <em>tonality</em>. Labelling this as <em>C major</em> implies a lot more harmonic coherence than is present.</p>
+<p>Even when I agree with the label, there are still situations where assigning a label feels a bit problematic, such as songs with non-functional harmony, or which lack any clear harmony at all. For example, track 6669 (which you can listen to below) is centered around a C drone. <em>C major</em> is probably the best label when constrained to the 24-class setup, but it’s not really a good description of this passage’s <em>tonality</em>. Labelling this as <em>C major</em> implies a lot more harmonic coherence than is present.</p>
+<figure style="margin-top: 1.5em;" class="figure">
+<audio controls="" src="audio/track-6669.mp3" style="display: block; margin: 1em auto;">
+Your browser does not support the audio element.
+</audio>
+<figcaption>
+Audio 1: The first 60 seconds of track 6669 from FMAK.
+</figcaption>
+</figure>
 </section>
 <section id="wrapping-up" class="level3">
 <h3 class="anchored" data-anchor-id="wrapping-up"><em>Wrapping up</em></h3>
@@ -559,6 +567,9 @@ Table&nbsp;3: Qualitative breakdown of errors made by the best hybrid system. <b
 </div>
 <div id="ref-madmom" class="csl-entry" role="listitem">
 <div class="csl-left-margin">[9] </div><div class="csl-right-inline">S. Böck, F. Korzeniowski, J. Schlüter, F. Krebs, and G. Widmer, <span>“<span class="nocase">madmom: a new Python Audio and Music Signal Processing Library</span>,”</span> in <em>Proceedings of the 24th ACM international conference on multimedia</em>, Amsterdam, The Netherlands, Oct. 2016, pp. 1174–1178. doi: <a href="https://doi.org/10.1145/2964284.2973795">10.1145/2964284.2973795</a>.</div>
+</div>
+<div id="ref-kong2025skey" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">Y. Kong, G. Meseguer-Brocal, V. Lostanlen, M. Lagrange, and R. Hennequin, <span>“S-KEY: Self-supervised learning of major and minor keys from audio,”</span> in <em>ICASSP 2025 - 2025 IEEE international conference on acoustics, speech and signal processing (ICASSP)</em>, IEEE, 2025. doi: <a href="https://doi.org/10.1109/ICASSP49660.2025.10890222">10.1109/ICASSP49660.2025.10890222</a>.</div>
 </div>
 </div></section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
 

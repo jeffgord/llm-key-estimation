@@ -97,7 +97,7 @@ N 8.9s, Ab:maj 7.8s, F#:maj 0.7s, B:maj 2.1s, A:maj 2.0s, Ab:maj 8.4s, B:maj 2.1
 
 ### *Putting it together*
 
-So, to estimate the key for a given piece of music, I first run the audio through a chord recognizer. For this experiment, I used one from 2019 ([@jiang2019large]) because it was quick to get running from the authors' [repo](https://github.com/music-x-lab/ISMIR2019-Large-Vocabulary-Chord-Recognition), and holds up pretty well against more modern approaches as evaluated by [MIREX 2025](https://music-ir.org/mirex/wiki/2025:Audio_Chord_Estimation_Results). I then feed the output of the chord recognizer to an LLM. The prompt looks roughly like this:
+So, to estimate the key for a given piece of music, the first step involves running audio through a chord recognizer. For this experiment, I used one from 2019 ([@jiang2019large]) because it was quick to get running from the authors' [repo](https://github.com/music-x-lab/ISMIR2019-Large-Vocabulary-Chord-Recognition), and holds up pretty well against more modern approaches as evaluated by [MIREX 2025](https://music-ir.org/mirex/wiki/2025:Audio_Chord_Estimation_Results). I then feed the output of the chord recognizer to an LLM. The prompt looks roughly like this:
 
 > Tell me what key you think this song is in based on its chords:
 > </br>
@@ -116,7 +116,7 @@ The nice thing about this pipeline is that there is no need for re-training. Of 
 
 ### *Experimental Setup*
 
-To figure out whether this system works at all, we have to test it on tracks for which we already know the key, and compare its estimates to those of other systems. I chose the relatively recently compiled FMAK dataset for this purpose [@wong2023fmak], which includes key annotations for 5,489 songs from the Free Music Archive [@defferrard2017fma]. I opted for the v2 annotations (compiled as part of [@kong2024stone]), which includes corrections for some identified mislabelings. While it's not perfect (more on this later), this dataset far surpasses other key estimation datasets in terms of size and musical diversity (see figure @fig-dataset-overview), so it's better at evaluating an algorithm's performance \"in the wild.\"
+To figure out whether this system works at all, we have to test it on tracks for which we already know the key, and compare its estimates to those of other systems. I chose the relatively recently compiled FMAK dataset for this purpose [@wong2023fmak], which includes key annotations for 5,489 songs from the Free Music Archive [@defferrard2017fma]. I opted for the v2 annotations (compiled as part of [@kong2024stone]), which includes corrections for some identified mislabelings. While it's not perfect (more on this later), this dataset far surpasses other key estimation datasets in terms of size and musical diversity (see @fig-dataset-overview), so it's better at evaluating an algorithm's performance \"in the wild.\"
 
 ::: {#fig-dataset-overview}
 ![Number of tracks in commonly used datasets with key annotations. FMAK is the only dataset with musical diversity -- Beatport and Giantsteps are EDM only, ClassicalDB is classical only, GuitarSet is guitar excerpts only, and Beatles is music by The Beatles only. All datasets available from [`mirdata`](https://mirdata.readthedocs.io/en/stable/index.html).](figs/dataset-sizes.svg){#fig-dataset-sizes}
@@ -126,11 +126,11 @@ To figure out whether this system works at all, we have to test it on tracks for
 Key estimation dataset size comparison and genre diversity within FMAK.
 :::
 
-I chose two baseline estimators to compare the Chords-LLM method to. The first is the Krumhansl-Schmuckler key-finding algorithm (KS, hereafter) [@temperley1999whats]. This is a relatively simple DSP method which involves first computing how much of each note is present in the passage of music (by averaging a chromagram over time). Then, these note activations are compared to 24 key profiles, selecting the most similar profile as the key estimate. The key profiles (shown below) come from a music psychology experiment where listeners were prompted to identify how well different tones continued a sequence of notes.
+I chose two baseline estimators to compare the Chords-LLM method to. The first is the Krumhansl-Schmuckler key-finding algorithm (KS, hereafter) [@temperley1999whats]. This is a relatively simple DSP method which involves first computing how much of each note is present in the passage of music (by averaging a chromagram over time). Then, these note activations are compared to 24 key profiles, selecting the most similar profile as the key estimate. The key profiles (@fig-key-profiles) come from a music psychology experiment where listeners were prompted to identify how well different tones continued a sequence of notes.
 
 ![Krumhansl-Kessler key profiles for *C major* (top) and *C minor* (bottom) keys. Reproduced from [@temperley1999whats].](figs/key-profiles.png){#fig-key-profiles}
 
-The other baseline is more modern deep learning approach -- the AllConv model [@korzeniowski2018genre] as implemented in `madmom` [@madmom]. This is a CNN-based model designed specifically to perform well across musical genre (remember that early systems were trained/evaluated mostly on EDM music).
+The other baseline is more modern deep learning approach -- the AllConv model [@korzeniowski2018genre] as implemented in `madmom` [@madmom]. This is a CNN-based model designed specifically to perform well across musical genre (remember that early systems were trained/evaluated mostly on EDM music). While this model is nearly 10 years old at this point, many consider it still to be the SOTA key estimator. Very recently, large-scale SSL models like S-KEY [@kong2025skey] have shown results on-par or just slightly better than AllConv.
 
 Notably, FMAK labels indicate the key for only the first 60 seconds of audio in each track. Therefore, I trimmed the tracks to 60 seconds before running through each of the key estimators.
 
@@ -230,7 +230,12 @@ This analysis is pretty informative. First off, there are some legitimate failur
 
 Another trend is the presence of annotation errors (4/10 tracks). This isn't a knock on the dataset curators -- it's a huge task to listen to over 5,000 songs and determine their keys. But just something to be aware of. It's possible that fixing the mislabellings might result in improvements to metrics reported in previous sections, but I doubt that it would change which system performs best comparatively.
 
-Even when I agree with the label, there are still situations where assigning a label feels a bit problematic, such as songs with non-functional harmony, or which lack any clear harmony at all. For example, track 6669 is centered around a C drone. *C major* is probably the best label when constrained to the 24-class setup, but it's not really a good description of this passage's *tonality*. Labelling this as *C major* implies a lot more harmonic coherence than is present.
+Even when I agree with the label, there are still situations where assigning a label feels a bit problematic, such as songs with non-functional harmony, or which lack any clear harmony at all. For example, track 6669 (which you can listen to below) is centered around a C drone. *C major* is probably the best label when constrained to the 24-class setup, but it's not really a good description of this passage's *tonality*. Labelling this as *C major* implies a lot more harmonic coherence than is present.
+
+<figure style="margin-top: 1.5em;">
+<audio controls src="audio/track-6669.mp3" style="display: block; margin: 1em auto;">Your browser does not support the audio element.</audio>
+<figcaption>Audio 1: The first 60 seconds of track 6669 from FMAK.</figcaption>
+</figure>
 
 ### *Wrapping up*
 
