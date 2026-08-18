@@ -1,7 +1,9 @@
 fma-keys/
+fma_metadata/
 choco/
 .DS_Store
 .env
 __pycache__/
 wikifonia-choco/
 writeup/*_files/
+key-datasets/
