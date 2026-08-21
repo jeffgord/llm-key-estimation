@@ -116,7 +116,7 @@ The nice thing about this pipeline is that there is no need for re-training. Of 
 
 ### *Experimental Setup*
 
-To figure out whether this system works at all, we have to test it on tracks for which we already know the key, and compare its estimates to those of other systems. I chose the relatively recently compiled FMAK dataset for this purpose [@wong2023fmak], which includes key annotations for 5,489 songs from the Free Music Archive [@defferrard2017fma]. I opted for the v2 annotations (compiled as part of [@kong2024stone]), which includes corrections for some identified mislabelings. While it's not perfect (more on this later), this dataset far surpasses other key estimation datasets in terms of size and musical diversity (see @fig-dataset-overview), so it's better at evaluating an algorithm's performance \"in the wild.\"
+To figure out whether this system works at all, we have to test it on tracks for which we already know the key, and compare its estimates to those of other systems. I chose the relatively recently compiled FMAK dataset for this purpose [@wong2023fmak], which includes key annotations for 5,489 songs from the Free Music Archive [@defferrard2017fma]. I opted for the v2 annotations (compiled as part of [@kong2024stone]), which includes corrections for some identified mislabelings. While it's not perfect (more on this later), this dataset far surpasses other key estimation datasets in terms of size and musical diversity (see @fig-dataset-overview), so it's better at evaluating an algorithm's performance \"in the wild.\" Notably, FMAK labels indicate the key for only the first 60 seconds of audio in each track. Therefore, I trimmed the tracks to 60 seconds before running through each of the key estimators.
 
 ::: {#fig-dataset-overview}
 ![Number of tracks in commonly used datasets with key annotations. FMAK is the only dataset with musical diversity -- Beatport and Giantsteps are EDM only, ClassicalDB is classical only, GuitarSet is guitar excerpts only, and Beatles is music by The Beatles only. All datasets available from [`mirdata`](https://mirdata.readthedocs.io/en/stable/index.html).](figs/dataset-sizes.svg){#fig-dataset-sizes}
@@ -130,9 +130,7 @@ I chose two baseline estimators to compare the Chords-LLM method to. The first i
 
 ![Krumhansl-Kessler key profiles for *C major* (top) and *C minor* (bottom) keys. Reproduced from [@temperley1999whats].](figs/key-profiles.png){#fig-key-profiles}
 
-The other baseline is more modern deep learning approach -- the AllConv model [@korzeniowski2018genre] as implemented in `madmom` [@madmom]. This is a CNN-based model designed specifically to perform well across musical genre (remember that early systems were trained/evaluated mostly on EDM music). While this model is nearly 10 years old at this point, many consider it still to be the SOTA key estimator. Very recently, large-scale SSL models like S-KEY [@kong2025skey] have shown results on-par or just slightly better than AllConv.
-
-Notably, FMAK labels indicate the key for only the first 60 seconds of audio in each track. Therefore, I trimmed the tracks to 60 seconds before running through each of the key estimators.
+The other baseline is more modern deep learning approach -- the AllConv model [@korzeniowski2018genre] as implemented in `madmom` [@madmom]. This is a CNN-based model designed specifically to perform well across musical genre (remember that early systems were trained/evaluated mostly on EDM music). While this model is nearly 10 years old at this point, many consider it still to be the SOTA key estimator [@kong2024stone; @kong2025skey]. Very recently, large-scale SSL models like S-KEY [@kong2025skey] have shown results on-par or just slightly better than AllConv.
 
 ### *Running the numbers*
 
@@ -146,34 +144,31 @@ Within the 24-class classification setup, all methods are assessed on raw accura
 | Parallel major/minor | 0.2 |
 | Other | 0.0 |
 
-: MIREX key estimation evaluation rubric. <br>\*Originally, only key estimates a fifth *above* the correct key were considered to be a fifth errors. I adopt the convention (used in MIREX since 2017) of counting estimates a fifth *below* as well.
+: MIREX key estimation evaluation rubric.
 {#tbl-mirex-score}
 
 <br>
 
 | Method | Accuracy | F1 (Macro) | Avg. MIREX |
 | :--- | :--- | :--- | :--- |
-| KS (baseline) | 0.5411 | 0.5167 | 0.6247 |
-| AllConv (baseline) | 0.6617 | 0.6429 | 0.7211 |
-| Chord-LLM | 0.6846*** | 0.6617* | 0.7291 |
-| Chord-LLM w/ Chroma | 0.6868*** | 0.6683*** | 0.7336* |
+| KS (baseline) | 0.5411 | 0.5167 | 0.6384 |
+| AllConv (baseline) | 0.6617 | 0.6429 | 0.7414 |
+| Chord-LLM | 0.6846** | 0.6617* | 0.7490 |
+| Chord-LLM w/ Chroma | 0.6868*** | 0.6683** | 0.7515 |
 
 : Performance comparison of baselines with Chord-LLM methods on FMAKv2. <br> Asterisks indicate performance better than the best baseline (AllConv): <br> * $p < 0.05$, ** $p < 0.01$, *** $p < 0.001$ {#tbl-performance}
 
-todo: double check these numbers
-todo: make sure we're using the right MIREX score here
+Results for the experiment are shown in @tbl-performance. Among the two baselines, AllConv performs substantially better than KS. This makes sense, since AllConv is a data-driven deep learning approaching, while KS is much cruder. In particular, KS discards all timing information by averaging in an unweighted fashion across the passage to be analyzed. Timing information is obviously important to determining the harmony and thus key of a song -- for instance, a note that falls on beat 1 is likely more important to the harmony than a note falling on the and of 3 -- so it makes sense that KS suffers for discarding this information. In addition, the key profiles used in KS come from a rather peculiar music psychology experiment, so we shouldn't expect them to be perfect for key estimation.
 
-Results for the experiment are shown in table @tbl-performance. Among the two baselines, AllConv performs substantially better than KS. This makes sense, since AllConv is a data-driven deep learning approaching, while KS is much cruder. In particular, KS discards all timing information by averaging in an unweighted fashion across the passage to be analyzed. Timing information is obviously important to determining the harmony and thus key of a song -- for instance, a note that falls on beat 1 is likely more important to the harmony than a note falling on the and of 3 -- so it makes sense that KS suffers for discrading this information. In addition, the key profiles used in KS come from a rather peculiar music psychology experiment (see above), so we shouldn't expect them to be perfect for key estimation.
+The performance of the LLM predicting key from the output of a chord recognizer is shown in the the third row (Chord-LLM) of @tbl-performance. This method outperforms AllConv across all metrics. To assess the statistical signficance of improvements, I used a paired McNemar test for accuracy, paired bootstrap test for F1, and paired sign-flip permutation test for MIREX score. P-values are reported with Bonferri correction to account for running multiple tests. Comparing Chord-LLM with AllConv, the improvements in accuracy and F1 are significant ($p = 0.002$ and $p = 0.04$, respectively), while the improvement in MIREX score is not ($p = 0.476$). This is a somewhat interesting result -- the Chord-LLM method makes substantially more correct key estimates than AllConv, but achieves only a slightly increased MIREX score. We'll see why this is later.
 
-The Chord-LLM method (third row) performs better than AllConv on all metrics. The improvement in accuracy is significant at $\alpha = 0.05$ using a paired McNemar test ($p < 0.001$). The improvement in F1 is also significant ($p = 0.017$) as assessed by a paired bootstrap test. However, the improvement in average MIREX score falls short of signifiance ($p = 0.164$) using a paired sign-flip permutation test. This is a somewhat interesting result -- the Chord-LLM method makes substantially more correct key estimates than the AllConv method, but recieves only a slightly increased MIREX score. We'll see why this is later.
-
-After quickly reviewing some of the errors made by Chord-LLM, I noticed failures on tracks with harmonically ambiguous chords. For example, if a song just switches between `A:maj` and `E:maj` chords, *A major* and *E major* are both plausible keys. To help the LLM distinguish between keys in a situation like this, I tried giving it the note activations (the same ones used by KS) in addition to the chords. The fourth row of the table shows the performance of this strategy. This leads to an ever so slight improvement in accuracy and F1, but a decent bump in MIREX score. Still the result falls short of statistical significance ($p = ??$). todo: add p-value
+After quickly reviewing some of the errors made by Chord-LLM, I noticed failures on tracks with harmonically ambiguous chords. For example, if a song just switches between `A:maj` and `E:maj` chords, *A major* and *E major* are both plausible keys. To help the LLM distinguish between keys in a situation like this, I tried giving it the note activations (the same ones used by KS) in addition to the chords. The fourth row (Chord-LLM w/ Chroma) of @tbl-performance shows the performance of this strategy. This leads to an ever so slight improvement in accuracy and F1, but a decent bump in MIREX score. Still, the improvement in MIREX falls short of statistical significance when compared to AllConv ($p = 0.172$).
 
 ### *Key Distance Error Analysis* {#sec-key-distance-error-analysis}
 
-Another musically-informed way to evaluate performance is to consider the distance (in the set theory sense) between the pitches in the predicted and true key. For example, *C major* and *D major* share all but two pitches -- C and F (which are both sharp in *D major* but not in *C major*) -- so they have a key distance of two. One complication is dealing with mode errors, where the predicted key is major and the true key is minor, or vice versa. In this stuation, I decided to treat the minor key as its relative major. This means that *C major* and *A minor* would have a key distance of 0, *C major* and *D minor* would have a key distance of 1, and so on.
+Another musically-informed way to evaluate performance is to consider the distance (in the set theory sense) between the pitches in the predicted and true key. For example, *C major* and *D major* share all but two pitches -- C and F, which are both sharp in *D major* but not in *C major* -- so they have a key distance of two. One complication is dealing with mode errors, where the predicted key is major and the true key is minor, or vice versa. In this stuation, I decided to treat the minor key as its relative major. This means that *C major* and *A minor* would have a key distance of 0, *C major* and *D minor* would have a key distance of 1, and so on.
 
-When humans determine the key of a passage, they may sometimes confuse the correct key for a different one with a low key distance from the correct key, which shares many of the same pitches. A reasonably competent musician will only make a high key distance mistake if there is genuine ambiguity (e.g. non-functional harmony or chromaticism) or a labelling issue. So for a decent key estimation algorithm which makes musically plausible mistakes, we also expect to see few predictions with a high key distance from the label. This trend is largely borne out, shown in figure~ below -- all algorithms examined here show fewer predictions with increasing key distance. 
+When humans determine the key of a passage, they may sometimes confuse the correct key for a different one which shares many pitches with the correct key (i.e. so the estimated key and actual key have a low key distance). A reasonably competent musician will only make a high key distance mistake if there is substantial ambiguity (e.g. non-functional harmony or chromaticism). So for a decent key estimation algorithm which makes musically plausible mistakes, we also expect to see few predictions with a high key distance from the label. This trend is largely borne out for our key estimators. Shown in figure~ below, all algorithms show fewer predictions with increasing key distance. 
 
 todo: add key distance plot. also, considering explicitly showing the proportion of relative and parallel errors somehow on the plot
 
