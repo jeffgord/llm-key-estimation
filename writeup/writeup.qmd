@@ -190,14 +190,14 @@ A key insight is that the predictions themselves can be used to detect a paralle
 | :--- | :--- | :--- | :--- |
 | AllConv | 0.6617 | 0.6429 | 0.7414 |
 | Chord-LLM w/ Chroma | 0.6868 | 0.6683 | 0.7515 |
-| Hybrid (Parallel Only) | 0.7091 | 0.6878 | 0.7700 |
+| Hybrid (Parallel Correction Only) | 0.7091 | 0.6878 | 0.7700 |
 | Hybrid (Threshold 0.5) | 0.7151 | 0.6947 | 0.7760 |
 
-: Performance comparison of AllConv, Chord-LLM w/ Chroma, and hybrid systems on FMAKv2. {#tbl-hybrid-performance}
+: Performance comparison of AllConv, Chord-LLM w/ Chroma, and hybrid systems on FMAKv2. Both hybrid methods achieve statistically significant improvements across all metrics ($p < 0.001$), compared individually to AllConv and Chord-LLM w/ Chroma. {#tbl-hybrid-performance}
 
 todo: add significance stars
 
-@tbl-hybrid-performance shows the performance of this system in the third row, with the metrics of the individual componenet systems reproduced in the first two rows for comparison. This hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics. Additionally, figure~ shows the same key distance distribution plot from before. As we hoped for, the hybrid system achieves the best of both worlds -- few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.
+@tbl-hybrid-performance shows the performance of this system in the third row, with the metrics of the individual component systems reproduced in the first two rows for comparison. This hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics ($p < 0.001$ ) when compared to the predictions output by each individual system. Additionally, figure~ shows the same key distance distribution plot from before. As we hoped for, the hybrid system achieves the best of both worlds -- few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.
 
 todo: add key distance table
 
@@ -211,7 +211,7 @@ The fourth row of the table above shows the performance of this system. It achie
 
 ### *A musically-informed error analysis*
 
-Still, the best system only gets the key correct about 71% of the time. That's surprisingly poor performance for a task that doesn't seem *that* challenging. To get a better sense of what's going on here, I took a random sample of tracks which the best system predicted incorrectly, and listened carefully to see what went wrong:
+Still, the best system only gets the key correct about 72% of the time. That's surprisingly poor performance for a task that doesn't seem *that* challenging. To get a better sense of what's going on here, I took a random sample of tracks which the best system predicted incorrectly, and listened carefully to see what went wrong:
 
 | Track ID | Actual | Predicted | Possible Explanation | |
 | :--- | :--- | :--- | :--- | :--- |

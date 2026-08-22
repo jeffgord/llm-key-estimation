@@ -412,7 +412,7 @@ Figure&nbsp;4: Distance between actual and predicted keys for baseline and Chord
 <div id="tbl-hybrid-performance" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-hybrid-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;3: Performance comparison of AllConv, Chord-LLM w/ Chroma, and hybrid systems on FMAKv2.
+Table&nbsp;3: Performance comparison of AllConv, Chord-LLM w/ Chroma, and hybrid systems on FMAKv2. Both hybrid methods achieve statistically significant improvements across all metrics (<span class="math inline">\(p &lt; 0.001\)</span>), compared individually to AllConv and Chord-LLM w/ Chroma.
 </figcaption>
 <div aria-describedby="tbl-hybrid-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="caption-top table">
@@ -438,7 +438,7 @@ Table&nbsp;3: Performance comparison of AllConv, Chord-LLM w/ Chroma, and hybrid
 <td style="text-align: left;">0.7515</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Hybrid (Parallel Only)</td>
+<td style="text-align: left;">Hybrid (Parallel Correction Only)</td>
 <td style="text-align: left;">0.7091</td>
 <td style="text-align: left;">0.6878</td>
 <td style="text-align: left;">0.7700</td>
@@ -455,7 +455,7 @@ Table&nbsp;3: Performance comparison of AllConv, Chord-LLM w/ Chroma, and hybrid
 </figure>
 </div>
 <p>todo: add significance stars</p>
-<p><a href="#tbl-hybrid-performance" class="quarto-xref">Table&nbsp;3</a> shows the performance of this system in the third row, with the metrics of the individual componenet systems reproduced in the first two rows for comparison. This hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics. Additionally, figure~ shows the same key distance distribution plot from before. As we hoped for, the hybrid system achieves the best of both worlds – few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.</p>
+<p><a href="#tbl-hybrid-performance" class="quarto-xref">Table&nbsp;3</a> shows the performance of this system in the third row, with the metrics of the individual component systems reproduced in the first two rows for comparison. This hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics (<span class="math inline">\(p &lt; 0.001\)</span> ) when compared to the predictions output by each individual system. Additionally, figure~ shows the same key distance distribution plot from before. As we hoped for, the hybrid system achieves the best of both worlds – few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.</p>
 <p>todo: add key distance table</p>
 <p>There are other situations where it might make sense to prefer AllConv’s predictions, too. Consider a song which is just one person singing alone. There’s no harmony here, so the chord recognizer would just output <code>N 60s</code> (i.e.&nbsp;no chord detected). Acting on this output, the LLM is just guessing (though the added Chroma profiles probably help a bit). In this situation, we’d prefer to go with AllConv’s prediction, since it doesn’t rely merely on harmony.</p>
 <p>I tried out a few different ways of dealing with this situation. One way is to have the LLM spit out a confidence score along with its key prediction, and use the AllConv prediction when the LLM’s confidence is low. However, I found that a simpler method achieved better results. For each song, calculate the proportion of the total duration for which the chord is <code>N</code>. When this proportion is above some threshold, use AllConv’s prediction instead. Experimentally, I determined the best threshold to be around 0.5. The figure below depicts the logic behind this hybrid system.</p>
@@ -464,7 +464,7 @@ Table&nbsp;3: Performance comparison of AllConv, Chord-LLM w/ Chroma, and hybrid
 </section>
 <section id="a-musically-informed-error-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="a-musically-informed-error-analysis"><em>A musically-informed error analysis</em></h3>
-<p>Still, the best system only gets the key correct about 71% of the time. That’s surprisingly poor performance for a task that doesn’t seem <em>that</em> challenging. To get a better sense of what’s going on here, I took a random sample of tracks which the best system predicted incorrectly, and listened carefully to see what went wrong:</p>
+<p>Still, the best system only gets the key correct about 72% of the time. That’s surprisingly poor performance for a task that doesn’t seem <em>that</em> challenging. To get a better sense of what’s going on here, I took a random sample of tracks which the best system predicted incorrectly, and listened carefully to see what went wrong:</p>
 <div id="tbl-hybrid-errors" class="quarto-float quarto-figure quarto-figure-center anchored" data-tbl-colwidths="[11,11,11,60,7]">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-hybrid-errors-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
