@@ -165,6 +165,8 @@ window.Quarto = {
 
 
 <style>
+body { background-color: #fefaee; }
+#quarto-appendix.default { background-color: #fefaee; }
 figcaption { text-align: center; }
 .roman { font-family: Georgia, "Times New Roman", serif; font-variant: small-caps; }
 #tbl-mirex-score table { width: auto; margin-left: auto; margin-right: auto; }
@@ -522,7 +524,7 @@ Table&nbsp;4: Qualitative breakdown of errors made by the best hybrid system. <b
 <td style="text-align: left;">5078</td>
 <td style="text-align: left;">E major</td>
 <td style="text-align: left;">D major</td>
-<td style="text-align: left;">This is a pretty complex song where the A section is sort of E7 bluesy (with some chromaticism) and the B section is a non-functional trip between A:maj, C:maj, and E:min. Neither AllConv nor the LLM gets it right.</td>
+<td style="text-align: left;">This is a pretty complex song where the A section is sort of E7 bluesy (with some chromaticism) and the B section is a non-functional trip between <code>A:maj</code>, <code>C:maj</code>, and <code>E:min</code>. Neither AllConv nor the LLM gets it right.</td>
 <td style="text-align: left;">🤖</td>
 </tr>
 <tr class="odd">
@@ -543,7 +545,7 @@ Table&nbsp;4: Qualitative breakdown of errors made by the best hybrid system. <b
 <td style="text-align: left;">9866</td>
 <td style="text-align: left;">D major</td>
 <td style="text-align: left;">Bb major</td>
-<td style="text-align: left;">The recording is pretty noisy, and the harmony is quite non-functional with one section loosely floating about Db:maj and another grounded in Bb:maj. The <em>D major</em> label is not a good choice here, though I would be hard pressed to say what is.</td>
+<td style="text-align: left;">The recording is pretty noisy, and the harmony is quite non-functional with one section loosely floating about <code>Db:maj</code> and another grounded in <code>Bb:maj</code>. The <em>D major</em> label is not a good choice here, though I would be hard pressed to say what is.</td>
 <td style="text-align: left;">🏷️ 👀</td>
 </tr>
 <tr class="even">
@@ -564,7 +566,7 @@ Table&nbsp;4: Qualitative breakdown of errors made by the best hybrid system. <b
 <td style="text-align: left;">16120</td>
 <td style="text-align: left;">Ab minor</td>
 <td style="text-align: left;">Eb major</td>
-<td style="text-align: left;">The tuning is a bit "free" on this one since the only instrument is voice. I don’t love the label because I think the tonic is closer to G than Ab. Regardless, the chord representation alternates between G:maj and Eb:maj, which is unfortunate since G:min is a better choice here (the third is underspecified). This throws off the LLM and AllConv too.</td>
+<td style="text-align: left;">The tuning is a bit "free" on this one since the only instrument is voice. I don’t love the label because I think the tonic is closer to G than Ab. Regardless, the chord representation alternates between <code>G:maj</code> and <code>Eb:maj</code>, which is unfortunate since <code>G:min</code> is a better choice here (the third is underspecified). This throws off the LLM and AllConv too.</td>
 <td style="text-align: left;">🤖</td>
 </tr>
 </tbody>
@@ -591,10 +593,10 @@ Audio 1: The first 60 seconds of track 6669 from FMAK.
 <ul>
 <li><strong>Better subsystems:</strong> I stuck with the same chord recognizer for the whole experiment, mainly because it was easy to get up-and-running. But its not even the best-performing one these days. Also, I used a relatively cheap and non-frontier LLM. As mentioned above, I did a quick test on a subset of data using a more powerful model, but found that the performance was nearly identical. Still, you could maybe eke out slightly better metrics by using a better chord recognizer and stronger LLM with very high reasoning.</li>
 <li><strong>Other features:</strong> chord charts make sense as a feature representation for LLMs. But the latest frontier models are quite powerful, and could probably handle even more complex representations of music. Something like a MIDI representation of the main melody would complement the chord representation well, and its worth testing whether this might further improve performance.</li>
-<li><strong>Compute efficiency:</strong> LLMs are heavy duty, and are probably overkill for this task. A simpler ML method might be enough to infer key from chords. And a whole lot cheaper. I think it would be interesting to see the gap between a strong ML method and the LLM. This sort of measures the utility of the LLM’s explicit music theory knowledge and edge-case resistance – i.e.&nbsp;what would be challenging for a traditional ML method to learn from a lablled dataset.</li>
+<li><strong>Compute efficiency:</strong> LLMs are heavy duty, and are probably overkill for this task. A simpler ML method might be enough to infer key from chords. And a whole lot cheaper. I think it would be interesting to see the gap between a strong ML method and the LLM. This sort of measures the utility of the LLM’s explicit music theory knowledge and edge-case resistance – i.e.&nbsp;what would be challenging for a traditional ML method to learn from a small, labelled dataset.</li>
 </ul>
 <p>However, this project is just as much about key estimators, as it is about the key estimation task itself. There’s plenty of music that doesn’t fit the 24-class classification setup well. This could be for a number of reasons – there’s a tonic but the quality isn’t exactly major or minor, the harmony is highly chromatic or non-functional, there’s no clear harmony at all, there’s bi-tonality, and so on. This list doesn’t even include the most-complicating factor of all: key shifts. The FMAK dataset has been carefully curated to include (mostly) songs with a single key. But this just isn’t realistic for music <em>in the wild.</em></p>
-<p>This provides another explanation for the low popularity of key estimation among MIR practitioners. Since the task doesn’t work for a lot of music, key estimation just isn’t that useful. One answer to this is just to avoid working on key estimation. But we could also try to improve the task definition – include a more expansive set of possible key qualities, annotate full songs with key shifts marked, allow for the possiblibility of multiple keys at once, etc.. I’ll leave that for the next project, though.</p>
+<p>This provides another explanation for the low popularity of key estimation among MIR practitioners. Since the task doesn’t make sense for a lot of music, key estimation just isn’t that useful. One answer to this is just to avoid working on key estimation. But we could also try to improve the task definition – include a more expansive set of possible key qualities, annotate full songs with key shifts marked, allow for the possiblibility of multiple keys at once, etc.. I’ll leave that for the next project, though.</p>
 
 </section>
 
