@@ -195,19 +195,17 @@ A key insight is that the predictions themselves can be used to detect a paralle
 
 : Performance comparison of AllConv, Chord-LLM w/ Chroma, and hybrid systems on FMAKv2. Both hybrid methods achieve statistically significant improvements across all metrics ($p < 0.001$), compared individually to AllConv and Chord-LLM w/ Chroma. {#tbl-hybrid-performance}
 
-todo: add significance stars
+@tbl-hybrid-performance shows the performance of this system in the third row, with the metrics of the individual component systems reproduced in the first two rows for comparison. This hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics ($p < 0.001$ ) when compared to the predictions output by each individual system. Additionally, @fig-key-distance-distribution-2 shows the same key distance distribution plot from before. As we hoped for, the hybrid system achieves the best of both worlds -- few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.
 
-@tbl-hybrid-performance shows the performance of this system in the third row, with the metrics of the individual component systems reproduced in the first two rows for comparison. This hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics ($p < 0.001$ ) when compared to the predictions output by each individual system. Additionally, figure~ shows the same key distance distribution plot from before. As we hoped for, the hybrid system achieves the best of both worlds -- few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.
-
-todo: add key distance table
+![Distance between actual and predicted keys for AllConv, Chord-LLM w/ Chroma, and Hybrid methods.](figs/key-distance-distribution-2.svg){#fig-key-distance-distribution-2}
 
 There are other situations where it might make sense to prefer AllConv's predictions, too. Consider a song which is just one person singing alone. There's no harmony here, so the chord recognizer would just output `N 60s` (i.e. no chord detected). Acting on this output, the LLM is just guessing (though the added Chroma profiles probably help a bit). In this situation, we'd prefer to go with AllConv's prediction, since it doesn't rely merely on harmony.
 
-I tried out a few different ways of dealing with this situation. One way is to have the LLM spit out a confidence score along with its key prediction, and use the AllConv prediction when the LLM's confidence is low. However, I found that a simpler method achieved better results. For each song, calculate the proportion of the total duration for which the chord is `N`. When this proportion is above some threshold, use AllConv's prediction instead. Experimentally, I determined the best threshold to be around 0.5. The figure below depicts the logic behind this hybrid system.
+I tried out a few different ways of dealing with this situation. One way is to have the LLM spit out a confidence score along with its key prediction, and use the AllConv prediction when the LLM's confidence is low. However, I found that a simpler method achieved better results. For each song, calculate the proportion of the total duration for which the chord is `N`. When this proportion is above some threshold, use AllConv's prediction instead. Experimentally, I determined the best threshold to be around 0.5. The figure below depicts the logic behind this final hybrid system.
 
 todo: picture of pipeline
 
-The fourth row of the table above shows the performance of this system. It achieves a small, but noticeable performance improvement over the hybrid system which corrects parallel errors only. If I was choosing a key estimation system to deploy in the wild and my main goal was accuracy, I'd choose this one based on its metrics. Though at this point, the hybrid system is highly optimized using insights gained from this specific dataset. So it might be best to confirm that these results hold on a validation set before deployment.
+The fourth row of @tbl-hybrid-performance above shows the performance of this system. It achieves a small, but noticeable performance improvement over the hybrid system which targets parallel errors only. If I was choosing a key estimation system to deploy in the wild, I'd choose this one based on its metrics. At this point, however, the hybrid system is highly optimized using insights gained from this specific dataset. So it might be best to confirm that these results hold on a validation set before deployment.
 
 ### *A musically-informed error analysis*
 
