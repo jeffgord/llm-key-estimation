@@ -183,12 +183,22 @@ figcaption { text-align: center; }
 <img src="figs/key-estimation-task.svg" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-key-estimation-task-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: Key estimation
+Figure&nbsp;1: Key estimation.
 </figcaption>
 </figure>
 </div>
 <p>Key estimation is a classic music information retrieval (MIR) problem, where a computer is tasked with identifying the key of a musical piece (see <a href="#fig-key-estimation-task" class="quarto-xref">Figure&nbsp;1</a>). Usually, key estimation is formulated as a straightforward multi-class classification problem, where the output of a key estimator is one of 24 classes: one of 12 roots × one of 2 qualities (major or minor). Enharmonic spellings (i.e.&nbsp;<em>D♭ minor</em> vs.&nbsp;<em>C♯ minor</em>) are considered to be equivalent, since these differences can’t be discerned from the audio alone.</p>
-<p>Notably, key estimation is a somewhat underexplored problem in MIR, at least compared to other popular MIR tasks (TODO: provide some evidence for this). One possible explanation for this is that the applications of a key estimator are relatively limited. Beat detectors and chord recognizers are vital for stuff like automatic transcription or real-time machine accompaniment. But there are far fewer uses for estimating the key of a song, aside from metadata collection perhaps.</p>
+<p>Notably, key estimation is a somewhat underexplored problem in MIR, at least compared to other popular MIR tasks (see <a href="#fig-ismir-paper-counts" class="quarto-xref">Figure&nbsp;2</a>). One possible explanation for this is that the applications of a key estimator are relatively limited. Source separators ship stock with many DAWs nowadays, and are widely used by producers and musicians alike. Similarly, Beat detectors and chord recognizers are vital for stuff like automatic transcription or real-time machine accompaniment. But there are far fewer uses for estimating the key of a song, aside from metadata collection perhaps.</p>
+<div id="fig-ismir-paper-counts" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ismir-paper-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ismir-paper-counts.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ismir-paper-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Number of papers published at ISMIR between 2020 and 2025 on common MIR tasks.
+</figcaption>
+</figure>
+</div>
 <p>Still, it’s an interesting problem to work on. From a musical perspective, defining a song’s key is a rather dubious task. Music is often about shifting between keys, or maybe being in one key but gesturing at another (like when the bridge of a jazz tune "modulates" to the <span class="roman">IV</span>). So it’s not always straightforward to say exactly what the key of a song is with the conciseness that a multi-class classification setup demands.</p>
 <p>Because key estimation is underexplored, the available datasets are fairly small and quirky. For a while, the most popular datasets were GiantSteps Key (600 tracks) and Beatport EDM Key (1,486 tracks), both of which include only EDM songs. This lack of data, both in terms of quantity and diversity, is a big issue for machine learning approaches. When humans figure out a song’s key, they are usually thinking about very high level musical information – e.g.&nbsp;looking at which chord ends each section, finding <span class="roman">V-I</span> cadences, etc.. It seems unlikely that an algorithm could uncover these kinds of complex, high-level patterns from limited data.</p>
 </section>
@@ -252,7 +262,7 @@ Figure&nbsp;1: Key estimation
 </section>
 <section id="experimental-setup" class="level3">
 <h3 class="anchored" data-anchor-id="experimental-setup"><em>Experimental Setup</em></h3>
-<p>To figure out whether this system works at all, we have to test it on tracks for which we already know the key, and compare its estimates to those of other systems. I chose the relatively recently compiled FMAK dataset for this purpose <span class="citation" data-cites="wong2023fmak"><a href="#ref-wong2023fmak" role="doc-biblioref">[4]</a></span>, which includes key annotations for 5,489 songs from the Free Music Archive <span class="citation" data-cites="defferrard2017fma"><a href="#ref-defferrard2017fma" role="doc-biblioref">[5]</a></span>. I opted for the v2 annotations (compiled as part of <span class="citation" data-cites="kong2024stone"><a href="#ref-kong2024stone" role="doc-biblioref">[6]</a></span>), which includes corrections for some identified mislabelings. While it’s not perfect (more on this later), this dataset far surpasses other key estimation datasets in terms of size and musical diversity (see <a href="#fig-dataset-overview" class="quarto-xref">Figure&nbsp;2</a>), so it’s better at evaluating an algorithm’s performance "in the wild." Notably, FMAK labels indicate the key for only the first 60 seconds of audio in each track. Therefore, I trimmed the tracks to 60 seconds before running through each of the key estimators.</p>
+<p>To figure out whether this system works at all, we have to test it on tracks for which we already know the key, and compare its estimates to those of other systems. I chose the relatively recently compiled FMAK dataset for this purpose <span class="citation" data-cites="wong2023fmak"><a href="#ref-wong2023fmak" role="doc-biblioref">[4]</a></span>, which includes key annotations for 5,489 songs from the Free Music Archive <span class="citation" data-cites="defferrard2017fma"><a href="#ref-defferrard2017fma" role="doc-biblioref">[5]</a></span>. I opted for the v2 annotations (compiled as part of <span class="citation" data-cites="kong2024stone"><a href="#ref-kong2024stone" role="doc-biblioref">[6]</a></span>), which includes corrections for some identified mislabelings. While it’s not perfect (more on this later), this dataset far surpasses other key estimation datasets in terms of size and musical diversity (see <a href="#fig-dataset-overview" class="quarto-xref">Figure&nbsp;3</a>), so it’s better at evaluating an algorithm’s performance "in the wild." Notably, FMAK labels indicate the key for only the first 60 seconds of audio in each track. Therefore, I trimmed the tracks to 60 seconds before running through each of the key estimators.</p>
 <div id="fig-dataset-overview" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-dataset-overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -278,18 +288,18 @@ Figure&nbsp;1: Key estimation
 </div>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dataset-overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: Key estimation dataset size comparison and genre diversity within FMAK.
+Figure&nbsp;3: Key estimation dataset size comparison and genre diversity within FMAK.
 </figcaption>
 </figure>
 </div>
-<p>I chose two baseline estimators to compare the Chords-LLM method to. The first is the Krumhansl-Schmuckler key-finding algorithm (KS, hereafter) <span class="citation" data-cites="temperley1999whats"><a href="#ref-temperley1999whats" role="doc-biblioref">[7]</a></span>. This is a relatively simple DSP method which involves first computing how much of each note is present in the passage of music (by averaging a chromagram over time). Then, these note activations are compared to 24 key profiles, selecting the most similar profile as the key estimate. The key profiles (<a href="#fig-key-profiles" class="quarto-xref">Figure&nbsp;3</a>) come from a music psychology experiment where listeners were prompted to identify how well different tones continued a sequence of notes.</p>
+<p>I chose two baseline estimators to compare the Chords-LLM method to. The first is the Krumhansl-Schmuckler key-finding algorithm (KS, hereafter) <span class="citation" data-cites="temperley1999whats"><a href="#ref-temperley1999whats" role="doc-biblioref">[7]</a></span>. This is a relatively simple DSP method which involves first computing how much of each note is present in the passage of music (by averaging a chromagram over time). Then, these note activations are compared to 24 key profiles, selecting the most similar profile as the key estimate. The key profiles (<a href="#fig-key-profiles" class="quarto-xref">Figure&nbsp;4</a>) come from a music psychology experiment where listeners were prompted to identify how well different tones continued a sequence of notes.</p>
 <div id="fig-key-profiles" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-key-profiles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="figs/key-profiles.png" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-key-profiles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: Krumhansl-Kessler key profiles for <em>C major</em> (top) and <em>C minor</em> (bottom) keys. Reproduced from <span class="citation" data-cites="temperley1999whats"><a href="#ref-temperley1999whats" role="doc-biblioref">[7]</a></span>.
+Figure&nbsp;4: Krumhansl-Kessler key profiles for <em>C major</em> (top) and <em>C minor</em> (bottom) keys. Reproduced from <span class="citation" data-cites="temperley1999whats"><a href="#ref-temperley1999whats" role="doc-biblioref">[7]</a></span>.
 </figcaption>
 </figure>
 </div>
@@ -390,14 +400,14 @@ Table&nbsp;2: Performance comparison of baselines with Chord-LLM methods on FMAK
 <section id="sec-key-distance-error-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="sec-key-distance-error-analysis"><em>Key Distance Error Analysis</em></h3>
 <p>Another musically-informed way to evaluate performance is to consider the distance (in the set theory sense) between the pitches in the predicted and true key. For example, <em>C major</em> and <em>D major</em> share all but two pitches – C and F, which are both sharp in <em>D major</em> but not in <em>C major</em> – so they have a key distance of two. One complication is dealing with mode errors, where the predicted key is major and the true key is minor, or vice versa. In this stuation, I decided to treat the minor key as its relative major. This means that <em>C major</em> and <em>A minor</em> would have a key distance of 0, <em>C major</em> and <em>D minor</em> would have a key distance of 1, and so on.</p>
-<p>When humans determine the key of a passage, they may sometimes confuse the correct key for a different one which shares many pitches with the correct key (i.e.&nbsp;so the estimated key and actual key have a low key distance). A reasonably competent musician will only make a high key distance mistake if there is substantial ambiguity (e.g.&nbsp;non-functional harmony or chromaticism). So for a decent key estimation algorithm which makes musically plausible mistakes, we also expect to see few predictions with a high key distance from the label. This trend is largely borne out for our key estimators. Shown in <a href="#fig-key-distance-distribution-1" class="quarto-xref">Figure&nbsp;4</a> below, all algorithms exhibit fewer predictions with increasing key distance.</p>
+<p>When humans determine the key of a passage, they may sometimes confuse the correct key for a different one which shares many pitches with the correct key (i.e.&nbsp;so the estimated key and actual key have a low key distance). A reasonably competent musician will only make a high key distance mistake if there is substantial ambiguity (e.g.&nbsp;non-functional harmony or chromaticism). So for a decent key estimation algorithm which makes musically plausible mistakes, we also expect to see few predictions with a high key distance from the label. This trend is largely borne out for our key estimators. Shown in <a href="#fig-key-distance-distribution-1" class="quarto-xref">Figure&nbsp;5</a> below, all algorithms exhibit fewer predictions with increasing key distance.</p>
 <div id="fig-key-distance-distribution-1" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-key-distance-distribution-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="figs/key-distance-distribution-1.svg" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-key-distance-distribution-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4: Distance between actual and predicted keys for baseline and Chord-LLM methods
+Figure&nbsp;5: Distance between actual and predicted keys for baseline and Chord-LLM methods
 </figcaption>
 </figure>
 </div>
@@ -455,14 +465,14 @@ Table&nbsp;3: Performance comparison of AllConv, Chord-LLM w/ Chroma, and hybrid
 </div>
 </figure>
 </div>
-<p><a href="#tbl-hybrid-performance" class="quarto-xref">Table&nbsp;3</a> shows the performance of this system in the third row, with the metrics of the individual component systems reproduced in the first two rows for comparison. This hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics (<span class="math inline">\(p &lt; 0.001\)</span> ) when compared to the predictions output by each individual system. Additionally, <a href="#fig-key-distance-distribution-2" class="quarto-xref">Figure&nbsp;5</a> shows the same key distance distribution plot from before. As we hoped for, the hybrid system achieves the best of both worlds – few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.</p>
+<p><a href="#tbl-hybrid-performance" class="quarto-xref">Table&nbsp;3</a> shows the performance of this system in the third row, with the metrics of the individual component systems reproduced in the first two rows for comparison. This hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics (<span class="math inline">\(p &lt; 0.001\)</span> ) when compared to the predictions output by each individual system. Additionally, <a href="#fig-key-distance-distribution-2" class="quarto-xref">Figure&nbsp;6</a> shows the same key distance distribution plot from before. As we hoped for, the hybrid system achieves the best of both worlds – few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.</p>
 <div id="fig-key-distance-distribution-2" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-key-distance-distribution-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="figs/key-distance-distribution-2.svg" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-key-distance-distribution-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;5: Distance between actual and predicted keys for AllConv, Chord-LLM w/ Chroma, and Hybrid methods.
+Figure&nbsp;6: Distance between actual and predicted keys for AllConv, Chord-LLM w/ Chroma, and Hybrid methods.
 </figcaption>
 </figure>
 </div>

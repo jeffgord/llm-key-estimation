@@ -24,11 +24,14 @@ figcaption { text-align: center; }
 
 ### *What is key estimation and why is it hard?*
 
-![Key estimation](figs/key-estimation-task.svg){#fig-key-estimation-task}
+![Key estimation.](figs/key-estimation-task.svg){#fig-key-estimation-task}
 
 Key estimation is a classic music information retrieval (MIR) problem, where a computer is tasked with identifying the key of a musical piece (see @fig-key-estimation-task). Usually, key estimation is formulated as a straightforward multi-class classification problem, where the output of a key estimator is one of 24 classes: one of 12 roots × one of 2 qualities (major or minor). Enharmonic spellings (i.e. *D♭ minor* vs. *C♯ minor*) are considered to be equivalent, since these differences can't be discerned from the audio alone.
 
-Notably, key estimation is a somewhat underexplored problem in MIR, at least compared to other popular MIR tasks (TODO: provide some evidence for this). One possible explanation for this is that the applications of a key estimator are relatively limited. Beat detectors and chord recognizers are vital for stuff like automatic transcription or real-time machine accompaniment. But there are far fewer uses for estimating the key of a song, aside from metadata collection perhaps.
+Notably, key estimation is a somewhat underexplored problem in MIR, at least compared to other popular MIR tasks (see @fig-ismir-paper-counts). One possible explanation for this is that the applications of a key estimator are relatively limited. Source separators ship stock with many DAWs nowadays, and are widely used by producers and musicians alike. Similarly, Beat detectors and chord recognizers are vital for stuff like automatic transcription or real-time machine accompaniment. But there are far fewer uses for estimating the key of a song, aside from metadata collection perhaps.
+
+![Number of papers published at ISMIR between 2020 and 2025 on common MIR tasks.](figs/ismir-paper-counts.svg){#fig-ismir-paper-counts}
+
 
 Still, it's an interesting problem to work on. From a musical perspective, defining a song's key is a rather dubious task. Music is often about shifting between keys, or maybe being in one key but gesturing at another (like when the bridge of a jazz tune \"modulates\" to the <span class="roman">IV</span>). So it's not always straightforward to say exactly what the key of a song is with the conciseness that a multi-class classification setup demands.
 
