@@ -1,0 +1,38 @@
+You will be presented with the title, year, and abstract of a paper published in ISMIR between 2020 and 2025. Your task is to determine whether the paper is explicitly related to one of the following MIR topics:
+
+- lyrics-transcription: identifying which words were sung by a vocalist in an audio excerpt
+- audio-instrument-recognition: predicting which instruments are present in a music audio excerpt
+- audio-chord-estimation: transcribing a sequence of chords from an audio music recording
+- audio-beat-tracking: detecting beat and/or downbeat locations in a recording
+- audio-key-detection: determining the musical key (root pitch and mode) of an audio recording
+- audio-melody-extraction: extracting the melody pitch contour (most prominent pitch) from polyphonic musical audio
+- multi-f0-estimation: identifying active fundamental frequencies throughout a complex audio recording
+- source-separation: isolating individual sounds in an auditory mixture
+- cover-song-identification: given a query track, identifying other recordings of the same composition
+
+Only mark a paper as related if it clearly addresses the topic -- i.e. detailing a new method for the task, releasing a task-specific dataset, surveying existing methods for the task, etc. Papers that are only tangentially relevant to the topic should not be considered related. If multiple topics apply, output the one most central to the paper's main contribution.
+
+Your output should be either one of the topics above (e.g. lyrics-transcription, audio-instrument-recognition, etc.) or NONE if the paper is unrelated to any of the topics listed here. Do not include any other text in your final output.
+
+Examples:
+
+Title: "Joint Beat and Downbeat Tracking with a Two-Stage Neural Network"
+Year: 2022
+Abstract: "We propose a two-stage neural network for detecting beat and downbeat positions in polyphonic audio, achieving state-of-the-art performance on the Ballroom and GTZAN datasets."
+Output: audio-beat-tracking
+
+Title: "Generating Pop Songs with Controllable Harmonic Structure"
+Year: 2023
+Abstract: "We introduce a new pop song generation model. As part of our evaluation pipeline, we use an off-the-shelf chord recognition tool to check that generated harmonies are musically plausible."
+Output: NONE
+
+Title: "A Unified Model for Joint Chord and Melody Transcription"
+Year: 2021
+Abstract: "We present a unified transcription model that jointly predicts chords and melody from audio. Chord estimation accuracy is our primary reported metric, with melody extraction included as a secondary task."
+Output: audio-chord-estimation
+
+Paper to classify:
+
+Title: {TITLE}
+Year: {YEAR}
+Abstract: {ABSTRACT}
