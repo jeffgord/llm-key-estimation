@@ -171,8 +171,8 @@ figcaption { text-align: center; }
 .roman { font-family: Georgia, "Times New Roman", serif; font-variant: small-caps; }
 #tbl-mirex-score table { width: auto; margin-left: auto; margin-right: auto; }
 </style>
-<p><em>I wanted to see whether large language models could reliably detect musical key from just the output of a chord recognizer. I tested this out using the FMAK dataset, and compared to two baselines. Turns out the LLM-driven method is pretty good at this task, which is surprising given how little information the LLM uses to make a prediction. Further, if we combine the LLM method with a strong deep learning approach, we will get a hybrid system that outperforms both.</em></p>
-<p><em>This research was adapted from my final project completed for MPATE-GE 2623 Music Information Retrieval taught by Brian McFee at NYU. The methods and writeup presented here are completely my own, though the experimental setup and baseline evaluations come from the class project. Therefore, credit is also due to my team members: Shan Shan Tu, Jason Lee, and Teddy Ryles.</em></p>
+<p><em>I wanted to see whether large language models could reliably predict musical key from the output of a chord recognizer. I tested this out using the FMAKv2 dataset, and compared to two baseline methods. Turns out the LLM-driven method works pretty well for this task, which is surprising given how little information it uses to make a prediction. Further, combining the LLM method with a strong deep learning approach yields a hybrid system that outperforms both, achieving SOTA scores on FMAKv2.</em></p>
+<p><em>This research was adapted from my final project for MPATE-GE 2623 Music Information Retrieval taught by Brian McFee at NYU. The methods and writeup presented here are completely my own, though the experimental setup and baseline evaluations come from the class project. Therefore, credit is also due to my team members: Shan Shan Tu, Jason Lee, and Teddy Ryles.</em></p>
 <p><em>To reproduce the results and analyses detailed here, see the <a href="https://github.com/jeffgord/llm-key-estimation">GitHub Repo</a>.</em></p>
 <hr>
 <section id="what-is-key-detection-and-why-is-it-hard" class="level3">
@@ -187,20 +187,20 @@ Figure&nbsp;1: Key detection.
 </figcaption>
 </figure>
 </div>
-<p>Key detection is a classic music information retrieval (MIR) problem, where a computer is tasked with identifying the key of a musical piece (see <a href="#fig-key-detection-task" class="quarto-xref">Figure&nbsp;1</a>). Usually, key detection is formulated as a straightforward multi-class classification problem, where the output of a key detector is one of 24 classes: one of 12 roots × one of 2 qualities (major or minor). Enharmonic spellings (i.e.&nbsp;<em>D♭ minor</em> vs.&nbsp;<em>C♯ minor</em>) are considered to be equivalent, since these differences can’t be discerned from the audio alone.</p>
-<p>Notably, key detection is a somewhat underexplored problem in MIR, at least compared to other popular MIR tasks (see <a href="#fig-ismir-paper-counts" class="quarto-xref">Figure&nbsp;2</a>). One possible explanation for this is that the applications of a key detector are relatively limited. Source separators ship stock with many DAWs nowadays, and are widely used by producers and musicians alike. Similarly, Beat detectors and chord recognizers are vital for stuff like automatic transcription or real-time machine accompaniment. But there are far fewer uses for detecting the key of a song, aside from metadata collection perhaps.</p>
+<p>Key detection is a classic music information retrieval (MIR) problem, where a computer is tasked with identifying the key of a musical piece (see <a href="#fig-key-detection-task" class="quarto-xref">Figure&nbsp;1</a>). Usually, key detection is formulated as a multi-class classification problem, where the output of a key detector is one of 24 classes: 12 roots × 2 qualities (major or minor). Enharmonic spellings (i.e.&nbsp;<em>D♭ minor</em> vs.&nbsp;<em>C♯ minor</em>) are considered to be equivalent, since these differences can’t be discerned from the audio alone.</p>
+<p>Notably, key detection is a somewhat underexplored problem in MIR, at least compared to other popular MIR tasks (see <a href="#fig-ismir-paper-counts" class="quarto-xref">Figure&nbsp;2</a>). One possible explanation for this is that the applications of a key detector are relatively limited. Source separation, beat tracking, and f0 estimation are crucial for many modern music production workflows. But there are far fewer uses for detecting the key of a song, aside from metadata collection perhaps.</p>
 <div id="fig-ismir-paper-counts" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-ismir-paper-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="figs/ismir-paper-counts.svg" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ismir-paper-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: Number of papers published at ISMIR between 2020 and 2025 on common MIR tasks.
+Figure&nbsp;2: Number of papers published at <a href="https://ismir.net/">ISMIR</a> (the premier MIR conference) between 2020 and 2025 on common MIR tasks. Paper classification done hastily by an LLM, so I wouldn’t treat these numbers as exact.
 </figcaption>
 </figure>
 </div>
 <p>Still, it’s an interesting problem to work on. From a musical perspective, defining a song’s key is a rather dubious task. Music is often about shifting between keys, or maybe being in one key but gesturing at another (like when the bridge of a jazz tune "modulates" to the <span class="roman">IV</span>). So it’s not always straightforward to say exactly what the key of a song is with the conciseness that a multi-class classification setup demands.</p>
-<p>Because key detection is underexplored, the available datasets are fairly small and quirky. For a while, the most popular datasets were GiantSteps Key (600 tracks) and Beatport EDM Key (1,486 tracks), both of which include only EDM songs. This lack of data, both in terms of quantity and diversity, is a big issue for machine learning approaches. When humans figure out a song’s key, they are usually thinking about very high level musical information – e.g.&nbsp;looking at which chord ends each section, finding <span class="roman">V-I</span> cadences, etc.. It seems unlikely that an algorithm could uncover these kinds of complex, high-level patterns from limited data.</p>
+<p>Because key detection is underexplored, the available datasets are fairly small and quirky. For a while, the most popular datasets were GiantSteps Key (600 tracks) and Beatport Key (1,486 tracks), both of which include only EDM songs. This lack of data, both in terms of quantity and diversity, is a big issue for machine learning approaches. When humans figure out a song’s key, they are usually thinking about very high level musical information – e.g.&nbsp;looking at which chord ends each section, finding <span class="roman">V-I</span> cadences, etc.. It seems unlikely that an algorithm could uncover these kinds of complex, high-level patterns from limited data.</p>
 </section>
 <section id="using-llms-for-key-detection" class="level3">
 <h3 class="anchored" data-anchor-id="using-llms-for-key-detection"><em>Using LLMs for Key Detection</em></h3>
@@ -209,7 +209,7 @@ Figure&nbsp;2: Number of papers published at ISMIR between 2020 and 2025 on comm
 </section>
 <section id="chord-recognizers-music-text" class="level3">
 <h3 class="anchored" data-anchor-id="chord-recognizers-music-text"><em>Chord Recognizers: Music → Text</em></h3>
-<p>In fact, there a many ways to represent music as text, though all of them are lossy. For instance, you could just describe it: <em>this song sounds like a summer’s day, but ruined by violins</em>. Or you could use music notation that has been converted to words through some process, such as musicXML:</p>
+<p>In fact, there a many ways to represent music as text, though all of them are lossy. For instance, you could just describe it: <em>this song sounds like a summer’s day, but ruined by violins</em>. Or you could use score notation that has been converted to text via some process, such as musicXML:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode xml code-with-copy"><code class="sourceCode xml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">note</span>&gt;</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">pitch</span>&gt;&lt;<span class="kw">step</span>&gt;G&lt;/<span class="kw">step</span>&gt;&lt;<span class="kw">octave</span>&gt;4&lt;/<span class="kw">octave</span>&gt;&lt;/<span class="kw">pitch</span>&gt;</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">duration</span>&gt;1&lt;/<span class="kw">duration</span>&gt;</span>
@@ -250,19 +250,28 @@ Figure&nbsp;2: Number of papers published at ISMIR between 2020 and 2025 on comm
 </section>
 <section id="putting-it-together" class="level3">
 <h3 class="anchored" data-anchor-id="putting-it-together"><em>Putting it together</em></h3>
-<p>So, to detect the key for a given piece of music, the first step involves running audio through a chord recognizer. For this experiment, I used one from 2019 (<span class="citation" data-cites="jiang2019large"><a href="#ref-jiang2019large" role="doc-biblioref">[3]</a></span>) because it was quick to get running from the authors’ <a href="https://github.com/music-x-lab/ISMIR2019-Large-Vocabulary-Chord-Recognition">repo</a>, and holds up pretty well against more modern approaches as evaluated by <a href="https://music-ir.org/mirex/wiki/2025:Audio_Chord_Estimation_Results">MIREX 2025</a>. I then feed the output of the chord recognizer to an LLM. The prompt looks roughly like this:</p>
+<p>So, to detect the key for a given piece of music, the first step is to run the audio through a chord recognizer. For this experiment, I used one from 2019 (<span class="citation" data-cites="jiang2019large"><a href="#ref-jiang2019large" role="doc-biblioref">[3]</a></span>) because it was quick to get running from the authors’ <a href="https://github.com/music-x-lab/ISMIR2019-Large-Vocabulary-Chord-Recognition">repo</a>, and holds up pretty well against more modern approaches as evaluated by <a href="https://music-ir.org/mirex/wiki/2025:Audio_Chord_Estimation_Results">MIREX 2025</a>. I then feed the output of the chord recognizer to an LLM. The prompt looks roughly like this:</p>
 <blockquote class="blockquote">
 <p>Tell me what key you think this song is in based on its chords: <br> {CHORDS}</p>
 <p>Beware that these chords came from a chord recognizer – not a lead sheet – so there may be mistakes or confusing enharmonic spellings. Also, long songs have been trimmed to 60s in length, so the chords may end in the middle of a phrase.</p>
 </blockquote>
 <p>The full prompt is avilable in the <a href="https://github.com/jeffgord/llm-key-estimation">GitHub Repo</a>. For the LLM, I used <code>Gemini 3.1 Flash Lite</code>, mainly because you can call it via API for free with Google’s <a href="https://aistudio.google.com/apps">AI Studio</a>. I also tested out using fancier LLMs on a small subset of data, but found that they achieved nearly identical results. This is good because using the fancy ones can get expensive, especially if you let them think.</p>
-<p>With it all put together, the pipeline looks like this:</p>
-<p>todo: figure</p>
-<p>The nice thing about this pipeline is that there is no need for re-training. Of course, one could theoretically stitch the chord recognizer and LLM together and fine-tune on a labeled dataset. But the hope is that the pre-trained chord recognizer has already learned a useful representation for this task, and the LLM has seen enough music theory in its training data to process that representation effectively.</p>
+<p>With it all put together, you can think of this pipeline like so:</p>
+<div id="fig-chord-llm" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-chord-llm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/chord-llm.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-chord-llm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: The Chord-LLM system transforms audio into a key prediction in two stages.
+</figcaption>
+</figure>
+</div>
+<p>The nice thing about this pipeline is that there is no need for re-training. The hope is that the pre-trained chord recognizer has already learned a useful representation for this task, and the LLM has seen enough music theory in its training data to process that representation effectively.</p>
 </section>
 <section id="experimental-setup" class="level3">
 <h3 class="anchored" data-anchor-id="experimental-setup"><em>Experimental Setup</em></h3>
-<p>To figure out whether this system works at all, we have to test it on tracks for which we already know the key, and compare its detections to those of other systems. I chose the relatively recently compiled FMAK dataset for this purpose <span class="citation" data-cites="wong2023fmak"><a href="#ref-wong2023fmak" role="doc-biblioref">[4]</a></span>, which includes key annotations for 5,489 songs from the Free Music Archive <span class="citation" data-cites="defferrard2017fma"><a href="#ref-defferrard2017fma" role="doc-biblioref">[5]</a></span>. I opted for the v2 annotations (compiled as part of <span class="citation" data-cites="kong2024stone"><a href="#ref-kong2024stone" role="doc-biblioref">[6]</a></span>), which includes corrections for some identified mislabelings. While it’s not perfect (more on this later), this dataset far surpasses other key detection datasets in terms of size and musical diversity (see <a href="#fig-dataset-overview" class="quarto-xref">Figure&nbsp;3</a>), so it’s better at evaluating an algorithm’s performance "in the wild." Notably, FMAK labels indicate the key for only the first 60 seconds of audio in each track. Therefore, I trimmed the tracks to 60 seconds before running through each of the key detectors.</p>
+<p>To figure out whether this system works at all, we have to test it on tracks for which we already know the key, and compare its detections to those of other systems. I chose the relatively recently compiled FMAK dataset for this purpose <span class="citation" data-cites="wong2023fmak"><a href="#ref-wong2023fmak" role="doc-biblioref">[4]</a></span>, which includes key annotations for 5,489 songs from the Free Music Archive <span class="citation" data-cites="defferrard2017fma"><a href="#ref-defferrard2017fma" role="doc-biblioref">[5]</a></span>. I opted for the v2 annotations (compiled as part of <span class="citation" data-cites="kong2024stone"><a href="#ref-kong2024stone" role="doc-biblioref">[6]</a></span>), which includes corrections for some identified mislabelings. While it’s not perfect (more on this later), this dataset far surpasses other key detection datasets in terms of size and musical diversity (see <a href="#fig-dataset-overview" class="quarto-xref">Figure&nbsp;4</a>), so it’s better at evaluating an algorithm’s performance "in the wild." Notably, FMAK labels indicate the key for only the first 60 seconds of audio in each track. Therefore, I trimmed the tracks to 60 seconds before running through each of the key detectors.</p>
 <div id="fig-dataset-overview" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-dataset-overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -288,18 +297,18 @@ Figure&nbsp;2: Number of papers published at ISMIR between 2020 and 2025 on comm
 </div>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dataset-overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: Key detection dataset size comparison and genre diversity within FMAK.
+Figure&nbsp;4: Key detection dataset size comparison and genre diversity within FMAK.
 </figcaption>
 </figure>
 </div>
-<p>I chose two baseline detectors to compare the Chords-LLM method to. The first is the Krumhansl-Schmuckler key-finding algorithm (KS, hereafter) <span class="citation" data-cites="temperley1999whats"><a href="#ref-temperley1999whats" role="doc-biblioref">[7]</a></span>. This is a relatively simple DSP method which involves first computing how much of each note is present in the passage of music (by averaging a chromagram over time). Then, these note activations are compared to 24 key profiles, selecting the most similar profile as the detected key. The key profiles (<a href="#fig-key-profiles" class="quarto-xref">Figure&nbsp;4</a>) come from a music psychology experiment where listeners were prompted to identify how well different tones continued a sequence of notes.</p>
+<p>I chose two baseline detectors to compare the Chords-LLM method to. The first is the Krumhansl-Schmuckler key-finding algorithm (KS, hereafter) <span class="citation" data-cites="temperley1999whats"><a href="#ref-temperley1999whats" role="doc-biblioref">[7]</a></span>. This is a relatively simple DSP method which involves first computing how much of each note is present in the passage of music (by averaging a chromagram over time). Then, these note activations are compared to 24 key profiles, selecting the most similar profile as the detected key. The key profiles (<a href="#fig-key-profiles" class="quarto-xref">Figure&nbsp;5</a>) come from a music psychology experiment where listeners were prompted to identify how well different tones continued a sequence of notes.</p>
 <div id="fig-key-profiles" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-key-profiles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="figs/key-profiles.png" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-key-profiles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4: Krumhansl-Kessler key profiles for <em>C major</em> (top) and <em>C minor</em> (bottom) keys. Reproduced from <span class="citation" data-cites="temperley1999whats"><a href="#ref-temperley1999whats" role="doc-biblioref">[7]</a></span>.
+Figure&nbsp;5: Krumhansl-Kessler key profiles for <em>C major</em> (top) and <em>C minor</em> (bottom) keys. Reproduced from <span class="citation" data-cites="temperley1999whats"><a href="#ref-temperley1999whats" role="doc-biblioref">[7]</a></span>.
 </figcaption>
 </figure>
 </div>
@@ -347,7 +356,6 @@ Table&nbsp;1: MIREX key detection evaluation rubric.
 </div>
 </figure>
 </div>
-<p><br></p>
 <div id="tbl-performance" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -400,14 +408,14 @@ Table&nbsp;2: Performance comparison of baselines with Chord-LLM methods on FMAK
 <section id="sec-key-distance-error-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="sec-key-distance-error-analysis"><em>Key Distance Error Analysis</em></h3>
 <p>Another musically-informed way to evaluate performance is to consider the distance (in the set theory sense) between the pitches in the predicted and true key. For example, <em>C major</em> and <em>D major</em> share all but two pitches – C and F, which are both sharp in <em>D major</em> but not in <em>C major</em> – so they have a key distance of two. One complication is dealing with mode errors, where the predicted key is major and the true key is minor, or vice versa. In this stuation, I decided to treat the minor key as its relative major. This means that <em>C major</em> and <em>A minor</em> would have a key distance of 0, <em>C major</em> and <em>D minor</em> would have a key distance of 1, and so on.</p>
-<p>When humans determine the key of a passage, they may sometimes confuse the correct key for a different one which shares many pitches with the correct key (i.e.&nbsp;so the detected key and actual key have a low key distance). A reasonably competent musician will only make a high key distance mistake if there is substantial ambiguity (e.g.&nbsp;non-functional harmony or chromaticism). So for a decent key detection algorithm which makes musically plausible mistakes, we also expect to see few predictions with a high key distance from the label. This trend is largely borne out for our key detectors. Shown in <a href="#fig-key-distance-distribution-1" class="quarto-xref">Figure&nbsp;5</a> below, all algorithms exhibit fewer predictions with increasing key distance.</p>
+<p>When humans determine the key of a passage, they may sometimes confuse the correct key for a different one which shares many pitches with the correct key (i.e.&nbsp;so the detected key and actual key have a low key distance). A reasonably competent musician will only make a high key distance mistake if there is substantial ambiguity (e.g.&nbsp;non-functional harmony or chromaticism). So for a decent key detection algorithm which makes musically plausible mistakes, we also expect to see few predictions with a high key distance from the label. This trend is largely borne out for our key detectors. Shown in <a href="#fig-key-distance-distribution-1" class="quarto-xref">Figure&nbsp;6</a> below, all algorithms exhibit fewer predictions with increasing key distance.</p>
 <div id="fig-key-distance-distribution-1" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-key-distance-distribution-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="figs/key-distance-distribution-1.svg" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-key-distance-distribution-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;5: Distance between actual and predicted keys for baseline and Chord-LLM methods
+Figure&nbsp;6: Distance between actual and predicted keys for baseline and Chord-LLM methods
 </figcaption>
 </figure>
 </div>
@@ -465,20 +473,35 @@ Table&nbsp;3: Performance comparison of AllConv, Chord-LLM w/ Chroma, and hybrid
 </div>
 </figure>
 </div>
-<p><a href="#tbl-hybrid-performance" class="quarto-xref">Table&nbsp;3</a> shows the performance of this system in the third row, with the metrics of the individual component systems reproduced in the first two rows for comparison. This hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics (<span class="math inline">\(p &lt; 0.001\)</span> ) when compared to the predictions output by each individual system. Additionally, <a href="#fig-key-distance-distribution-2" class="quarto-xref">Figure&nbsp;6</a> shows the same key distance distribution plot from before. As we hoped for, the hybrid system achieves the best of both worlds – few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.</p>
+<p><a href="#tbl-hybrid-performance" class="quarto-xref">Table&nbsp;3</a> shows the performance of this system in the third row, with the metrics of the individual component systems reproduced in the first two rows for comparison. This hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics (<span class="math inline">\(p &lt; 0.001\)</span> ) when compared to the predictions output by each individual system. Additionally, <a href="#fig-key-distance-distribution-2" class="quarto-xref">Figure&nbsp;7</a> shows the same key distance distribution plot from before. As we hoped for, the hybrid system achieves the best of both worlds – few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.</p>
 <div id="fig-key-distance-distribution-2" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-key-distance-distribution-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="figs/key-distance-distribution-2.svg" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-key-distance-distribution-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6: Distance between actual and predicted keys for AllConv, Chord-LLM w/ Chroma, and Hybrid methods.
+Figure&nbsp;7: Distance between actual and predicted keys for AllConv, Chord-LLM w/ Chroma, and Hybrid methods.
 </figcaption>
 </figure>
 </div>
 <p>There are other situations where it might make sense to prefer AllConv’s predictions, too. Consider a song which is just one person singing alone. There’s no harmony here, so the chord recognizer would just output <code>N 60s</code> (i.e.&nbsp;no chord detected). Acting on this output, the LLM is just guessing (though the added Chroma profiles probably help a bit). In this situation, we’d prefer to go with AllConv’s prediction, since it doesn’t rely merely on harmony.</p>
-<p>I tried out a few different ways of dealing with this situation. One way is to have the LLM spit out a confidence score along with its key prediction, and use the AllConv prediction when the LLM’s confidence is low. However, I found that a simpler method achieved better results. For each song, calculate the proportion of the total duration for which the chord is <code>N</code>. When this proportion is above some threshold, use AllConv’s prediction instead. Experimentally, I determined the best threshold to be around 0.5. The figure below depicts the logic behind this final hybrid system.</p>
-<p>todo: picture of pipeline</p>
+<p>I tried out a few different ways of dealing with this situation. One way is to have the LLM spit out a confidence score along with its key prediction, and use the AllConv prediction when the LLM’s confidence is low. However, I found that a simpler method achieved better results. For each song, calculate the proportion of the total duration for which the chord is <code>N</code>. When this proportion is above some threshold, use AllConv’s prediction instead. Experimentally, I determined the best threshold to be around 0.5.</p>
+<p>Here’s pseudo-code that lays out the logic behind this hybrid system a bit more succinctly:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> hybrid_detect_key(audio):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Run the audio through AllConv</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  allconv_key <span class="op">=</span> AllConv(audio)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># These next two lines constitute the chord-LLM system</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  chords <span class="op">=</span> ChordRecognizer(audio)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  chord_LLM_key <span class="op">=</span> LLM(chords)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Decision logic</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> proportion_N(chords) <span class="op">&gt;=</span> <span class="fl">0.5</span>:</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> allconv_key</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">elif</span> same_tonic(allconv_key, chord_LLM_key):</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> allconv_key</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span>:</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> chord_LLM_key</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The fourth row of <a href="#tbl-hybrid-performance" class="quarto-xref">Table&nbsp;3</a> above shows the performance of this system. It achieves a small, but noticeable performance improvement over the hybrid system which targets parallel errors only. If I was choosing a key detection system to deploy in the wild, I’d choose this one based on its metrics. At this point, however, the hybrid system is highly optimized using insights gained from this specific dataset. So it might be best to confirm that these results hold on a validation set before deployment.</p>
 </section>
 <section id="a-musically-informed-error-analysis" class="level3">
