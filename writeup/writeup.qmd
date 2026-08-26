@@ -4,6 +4,10 @@ author: "Jeffrey Gordon"
 date: "2026-08-26"
 bibliography: references.bib
 csl: ieee.csl
+format:
+  html:
+    include-in-header:
+      - text: <link rel="icon" type="image/svg+xml" href="figs/favicon.svg">
 ---
 
 <style>
