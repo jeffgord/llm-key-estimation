@@ -18,7 +18,7 @@ figcaption { text-align: center; }
 
 *This research was adapted from my final project for MPATE-GE 2623 Music Information Retrieval taught by Brian McFee at NYU. The methods and writeup presented here are completely my own, though the experimental setup and baseline evaluations come from the class project. Therefore, credit is also due to my team members: Shan Shan Tu, Jason Lee, and Teddy Ryles.*
 
-*To reproduce the results and analyses detailed here, see the [GitHub Repo](https://github.com/jeffgord/llm-key-estimation).*
+*To reproduce the results and analyses detailed here, see the [GitHub Repo](https://github.com/jeffgord/llm-key-detection).*
 
 ---
 
@@ -109,7 +109,7 @@ So, to detect the key for a given piece of music, the first step is to run the a
 > Beware that these chords came from a chord recognizer -- not a lead sheet -- so there may be mistakes or confusing enharmonic spellings.
 > Also, long songs have been trimmed to 60s in length, so the chords may end in the middle of a phrase.
 
-The full prompt is available in the [GitHub Repo](https://github.com/jeffgord/llm-key-estimation). For the LLM, I used `Gemini 3.1 Flash Lite`, mainly because you can call it via API for free with Google's [AI Studio](https://aistudio.google.com/apps). I also tested out using fancier LLMs on a small subset of data, but found that they achieved nearly identical results. This is good because using the fancy ones can get expensive, especially if you let them think.
+The full prompt is available in the [GitHub Repo](https://github.com/jeffgord/llm-key-detection). For the LLM, I used `Gemini 3.1 Flash Lite`, mainly because you can call it via API for free with Google's [AI Studio](https://aistudio.google.com/apps). I also tested out using fancier LLMs on a small subset of data, but found that they achieved nearly identical results. This is good because using the fancy ones can get expensive, especially if you let them think.
 
 With it all put together, you can think of this pipeline like so:
 
