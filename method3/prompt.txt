@@ -1,0 +1,38 @@
+Your task is to identify the key of a song based on its chords. The chords will be presented in a sequence with label and duration for each chord, such as the following:
+<chords-example>
+Bb:maj 2.0s, F:maj 2.0s, G:min7 2.0s, Eb:maj7 2.0s, Bb:maj 4.0s
+</chords-example>
+
+In addition to the chords, you will be given a vector representing activations for each of the 12 chromas during the song. While the chords will be more informative, you may find it useful to rely on the chroma activations in ambiguous cases - for example, when distinguishing between keys a fifth apart. The chroma will be presented in the following format:
+<chroma-example>
+C:0.056, C#:0.000, D:0.250, D#:0.042, E:0.000, F:0.264, F#:0.000, G:0.083, G#:0.000, A:0.056, A#:0.250, B:0.000
+</chroma-example>
+
+Here are some guidelines for completing this task:
+- The chords are derived from the output of a chord recognition model, not from a human transcription or lead sheet. Therefore, there may be mistakes or confusing enharmonic spellings. Because of the mistakes, you should not worry about making sense of every chord given the surrounding harmonic context.
+- Use your knowledge of music to analyze the harmony of the chord sequence, taking the duration of each chord into account. However, note that the corpus of music spans a diverse range of genres. Some songs may feature heavy chromaticism or non-functional harmony, making a traditional western music theory analysis inappropriate. In these cases, you will need to use your best judgement.
+- Songs have been trimmed to 60 seconds in length before running through the chord recognizer, so the chord sequence may end in the middle of a phrase. You should not take the last chord to be the chord on which a song ends (unless the song is less than 60 seconds long in total duration).
+- A chord labelled as "N" indicates that the chord reognizer was unable to assign a specific chord label to that instant in time.
+- You must assign a key label to every song, which consists of a tonic (e.g. "C", "Eb", "F#", etc.) and a quality (either "major" or "minor"). Examples of valid labels include: "C major", "Eb minor", or "F# major".
+- For keys with accidentals, either enharmonic spelling (e.g. "C# minor" and "Db minor") will be treated as correct.
+- If the harmonic content is ambiguous, you should use your best judgement. If the harmonic content is completely unhelpful (e.g. "N 60s"), you must still pick a key.
+- The chroma activations have been normalized to sum to 1. Note also that the enharmonic spelling of the chromas may not correspond with the key you think to be likely from the chords.
+- In addition to your selected key, include a score (0-100) indicating your level of confidence in the prediction. For example, you might have low confidence when the harmonic content is completely unhelpful (e.g. "N 60s") or otherwise confusing.
+- Further, include a short (1-3 sentences) explanation of why you picked the key that you did.
+
+Here is the chord sequence for this song:
+<chords>
+{CHORDS}
+</chords>
+
+And here are the chroma activations:
+<chroma>
+{CHROMA}
+</chroma>
+
+Your output should consist ONLY of the following json with your key label and explanation filled in:
+{
+    "key": "<tonic + quality, e.g. 'Eb major'>",
+    "confidence": <integer 0-100>,
+    "explanation": "<your explanation here>"
+}
