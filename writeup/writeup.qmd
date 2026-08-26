@@ -150,6 +150,8 @@ Within the 24-class classification setup, all methods are assessed on raw accura
 : MIREX key detection evaluation rubric.
 {#tbl-mirex-score}
 
+Results for the experiment are shown in @tbl-performance. Among the two baselines, AllConv performs substantially better than KS. This makes sense, since AllConv is a data-driven deep learning approach, while KS is much cruder. In particular, KS discards all timing information by averaging in an unweighted fashion across the passage to be analyzed. Timing information is obviously important to determining the harmony and thus key of a song -- for instance, a note that falls on beat 1 is likely more important to the harmony than a note falling on the and of 3 -- so it makes sense that KS suffers for discarding this information. In addition, the key profiles used in KS come from a rather peculiar music psychology experiment, so we shouldn't expect them to be perfect for key detection.
+
 | Method | Accuracy | F1 (Macro) | Avg. MIREX |
 | :--- | :--- | :--- | :--- |
 | KS (baseline) | 0.5411 | 0.5167 | 0.6384 |
@@ -158,8 +160,6 @@ Within the 24-class classification setup, all methods are assessed on raw accura
 | Chord-LLM w/ Chroma | 0.6868*** | 0.6683** | 0.7515 |
 
 : Performance comparison of baselines with Chord-LLM methods on FMAKv2. <br> Asterisks indicate performance better than the best baseline (AllConv): <br> * $p < 0.05$, ** $p < 0.01$, *** $p < 0.001$ {#tbl-performance}
-
-Results for the experiment are shown in @tbl-performance. Among the two baselines, AllConv performs substantially better than KS. This makes sense, since AllConv is a data-driven deep learning approach, while KS is much cruder. In particular, KS discards all timing information by averaging in an unweighted fashion across the passage to be analyzed. Timing information is obviously important to determining the harmony and thus key of a song -- for instance, a note that falls on beat 1 is likely more important to the harmony than a note falling on the and of 3 -- so it makes sense that KS suffers for discarding this information. In addition, the key profiles used in KS come from a rather peculiar music psychology experiment, so we shouldn't expect them to be perfect for key detection.
 
 The performance of the LLM predicting key from the output of a chord recognizer is shown in the third row (Chord-LLM) of @tbl-performance. This method outperforms AllConv across all metrics. To assess the statistical significance of improvements, I used a paired McNemar test for accuracy, paired bootstrap test for F1, and paired sign-flip permutation test for MIREX score. P-values are reported with Bonferroni correction to account for running multiple tests. Comparing Chord-LLM with AllConv, the improvements in accuracy and F1 are significant ($p = 0.002$ and $p = 0.04$, respectively), while the improvement in MIREX score is not ($p = 0.476$). This is a somewhat interesting result -- the Chord-LLM method makes substantially more correct key detections than AllConv, but achieves only a slightly increased MIREX score. We'll see why this is later.
 
@@ -210,7 +210,7 @@ def hybrid_detect_key(audio):
   # Run the audio through AllConv
   allconv_key = AllConv(audio)
   
-  # These next two lines constitute the chord-LLM system
+  # These next two lines constitute the Chord-LLM system
   chords = ChordRecognizer(audio)
   chord_LLM_key = LLM(chords)
 
