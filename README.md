@@ -1,6 +1,6 @@
-# LLM Key Estimation
+# LLM Key Detection
 
-Code and data pipeline behind [*Using LLMs for Key Detection*](writeup/writeup.qmd) — predicting the musical key of a song from a chord recognizer's output using an LLM, evaluated against DSP and deep learning baselines on FMAKv2.
+Code and data pipeline behind [*Using LLMs for Key Detection*](https://jeffgord.github.io/llm-key-detection/) — predicting the musical key of a song from a chord recognizer's output using an LLM, evaluated against DSP and deep learning baselines on FMAKv2.
 
 ## Setup
 
@@ -63,3 +63,11 @@ Not needed to reproduce the main results table:
 - [`evaluation/dataset-stats.ipynb`](evaluation/dataset-stats.ipynb) — dataset size / genre diversity figures.
 - `ismir-papers/download_ismir_abstracts.py` → `ismir-papers/classify_abstracts.py` → [`ismir-papers/analysis.ipynb`](ismir-papers/analysis.ipynb) — ISMIR paper-count-by-task figure.
 - `poc/` — earlier proof-of-concept version of the same Chord-LLM pipeline, but run on symbolic chord data (Wikifonia/ChoCo lead sheets) instead of a chord recognizer's output.
+
+## Updating the writeup site
+
+The writeup is published to GitHub Pages via Quarto. After editing `writeup/writeup.qmd`, push the update from `main` with:
+
+```
+quarto publish gh-pages writeup/writeup.qmd
+```
