@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jeffrey Gordon">
+<meta name="dcterms.date" content="2026-08-26">
+
+<title>Using LLMs for Key Detection</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="writeup_files/libs/clipboard/clipboard.min.js"></script>
+<script src="writeup_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="writeup_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="writeup_files/libs/quarto-html/popper.min.js"></script>
+<script src="writeup_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="writeup_files/libs/quarto-html/anchor.min.js"></script>
+<link href="writeup_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="writeup_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="writeup_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="writeup_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="writeup_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Using LLMs for Key Detection</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jeffrey Gordon </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 26, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<style>
+body { background-color: #fefaee; }
+#quarto-appendix.default { background-color: #fefaee; }
+figcaption { text-align: center; }
+.roman { font-family: Georgia, "Times New Roman", serif; font-variant: small-caps; }
+#tbl-mirex-score table { width: auto; margin-left: auto; margin-right: auto; }
+</style>
+<p><em>I wanted to see whether large language models could reliably predict musical key from the output of a chord recognizer. I tested this out using the FMAKv2 dataset, and compared to two baseline methods. Turns out the LLM-driven method works pretty well for this task, which is surprising given how little information it uses to make a prediction. Further, combining the LLM method with a strong deep learning approach yields a hybrid system that outperforms both.</em></p>
+<p><em>This research was adapted from my final project for MPATE-GE 2623 Music Information Retrieval taught by Brian McFee at NYU. The methods and writeup presented here are completely my own, though the experimental setup and baseline evaluations come from the class project. Therefore, credit is also due to my team members: Shan Shan Tu, Jason Lee, and Teddy Ryles.</em></p>
+<p><em>To reproduce the results and analyses detailed here, see the <a href="https://github.com/jeffgord/llm-key-detection">GitHub Repo</a>.</em></p>
+<hr>
+<section id="what-is-key-detection-and-why-is-it-hard" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-key-detection-and-why-is-it-hard"><em>What is key detection and why is it hard?</em></h3>
+<div id="fig-key-detection-task" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-key-detection-task-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/key-detection-task.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-key-detection-task-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Key detection.
+</figcaption>
+</figure>
+</div>
+<p>Key detection is a classic music information retrieval (MIR) problem, where a computer is tasked with identifying the key of a musical piece (see <a href="#fig-key-detection-task" class="quarto-xref">Figure&nbsp;1</a>). Usually, key detection is formulated as a multi-class classification problem, where the output of a key detector is one of 24 classes: 12 roots × 2 qualities (major or minor). Enharmonic spellings (i.e.&nbsp;<em>D♭ minor</em> vs.&nbsp;<em>C♯ minor</em>) are considered to be equivalent, since these differences can’t be discerned from the audio alone.</p>
+<p>Notably, key detection is a somewhat underexplored problem in MIR, at least compared to other popular MIR tasks (see <a href="#fig-ismir-paper-counts" class="quarto-xref">Figure&nbsp;2</a>). One possible explanation for this is that the applications of a key detector are relatively limited. Source separation, beat tracking, and f0 estimation are crucial for many modern music production workflows. But there are far fewer uses for detecting the key of a song, aside from metadata collection perhaps.</p>
+<div id="fig-ismir-paper-counts" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ismir-paper-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ismir-paper-counts.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ismir-paper-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Number of papers published at <a href="https://ismir.net/">ISMIR</a> (the premier MIR conference) between 2020 and 2025 on common MIR tasks. Paper classification done hastily by an LLM, so I wouldn’t treat these numbers as exact.
+</figcaption>
+</figure>
+</div>
+<p>Still, it’s an interesting problem to work on. From a musical perspective, defining a song’s key is a rather dubious task. Music is often about shifting between keys, or maybe being in one key but gesturing at another (like when the bridge of a jazz tune "modulates" to the <span class="roman">IV</span>). So it’s not always straightforward to say exactly what the key of a song is with the conciseness that a multi-class classification setup demands.</p>
+<p>Because key detection is underexplored, the available datasets are fairly small and quirky. For a while, the most popular datasets were GiantSteps Key (600 tracks) and Beatport Key (1,486 tracks), both of which include only EDM songs. This lack of data, both in terms of quantity and diversity, is a big issue for machine learning approaches. When humans figure out a song’s key, they are usually thinking about very high level musical information – e.g.&nbsp;looking at which chord ends each section, finding <span class="roman">V-I</span> cadences, etc.. It seems unlikely that an algorithm could uncover these kinds of complex, high-level patterns from limited data.</p>
+</section>
+<section id="using-llms-for-key-detection" class="level3">
+<h3 class="anchored" data-anchor-id="using-llms-for-key-detection"><em>Using LLMs for Key Detection</em></h3>
+<p>One way to deal with a lack of labeled data is to rely in part on a foundation model, which trains on a large corpus of unlabeled data in a self-supervised fashion. The hope is that this process encourages your model to learn generalizable representations, which can then be fine-tuned for many different tasks with just a small amount of labeled data. Indeed, a pre-trained music foundation model like MERT would probably work well for key detection.</p>
+<p>LLMs are another kind of foundation model which have been <em>quite</em> popular lately. And with so much money poured into their development by frontier labs, they should be good at lots of different tasks. But the problem with using LLMs for music tasks is that they operate on text, not audio.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> So to use them for key detection, we need some way to represent music as text.</p>
+</section>
+<section id="chord-recognizers-music-text" class="level3">
+<h3 class="anchored" data-anchor-id="chord-recognizers-music-text"><em>Chord Recognizers: Music → Text</em></h3>
+<p>In fact, there are many ways to represent music as text, though all of them are lossy. For instance, you could just describe it: <em>this song sounds like a summer’s day, but ruined by violins</em>. Or you could use score notation that has been converted to text via some process, such as musicXML:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode xml code-with-copy"><code class="sourceCode xml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">note</span>&gt;</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">pitch</span>&gt;&lt;<span class="kw">step</span>&gt;G&lt;/<span class="kw">step</span>&gt;&lt;<span class="kw">octave</span>&gt;4&lt;/<span class="kw">octave</span>&gt;&lt;/<span class="kw">pitch</span>&gt;</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">duration</span>&gt;1&lt;/<span class="kw">duration</span>&gt;</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">type</span>&gt;eighth&lt;/<span class="kw">type</span>&gt;</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">lyric</span>&gt;&lt;<span class="kw">syllabic</span>&gt;single&lt;/<span class="kw">syllabic</span>&gt;&lt;<span class="kw">text</span>&gt;Hap-&lt;/<span class="kw">text</span>&gt;&lt;/<span class="kw">lyric</span>&gt;</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">note</span>&gt;</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">note</span>&gt;</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">pitch</span>&gt;&lt;<span class="kw">step</span>&gt;G&lt;/<span class="kw">step</span>&gt;&lt;<span class="kw">octave</span>&gt;4&lt;/<span class="kw">octave</span>&gt;&lt;/<span class="kw">pitch</span>&gt;</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">duration</span>&gt;1&lt;/<span class="kw">duration</span>&gt;</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">type</span>&gt;eighth&lt;/<span class="kw">type</span>&gt;</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">lyric</span>&gt;&lt;<span class="kw">syllabic</span>&gt;single&lt;/<span class="kw">syllabic</span>&gt;&lt;<span class="kw">text</span>&gt;py&lt;/<span class="kw">text</span>&gt;&lt;/<span class="kw">lyric</span>&gt;</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">note</span>&gt;</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">note</span>&gt;</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">pitch</span>&gt;&lt;<span class="kw">step</span>&gt;A&lt;/<span class="kw">step</span>&gt;&lt;<span class="kw">octave</span>&gt;4&lt;/<span class="kw">octave</span>&gt;&lt;/<span class="kw">pitch</span>&gt;</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">duration</span>&gt;2&lt;/<span class="kw">duration</span>&gt;</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">type</span>&gt;quarter&lt;/<span class="kw">type</span>&gt;</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">lyric</span>&gt;&lt;<span class="kw">syllabic</span>&gt;single&lt;/<span class="kw">syllabic</span>&gt;&lt;<span class="kw">text</span>&gt;birth-&lt;/<span class="kw">text</span>&gt;&lt;/<span class="kw">lyric</span>&gt;</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">note</span>&gt;</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For a whole song with multiple instruments, this would quickly get out of hand, though. And there’s a lot of information in this representation that isn’t useful for our task (like lyrics).</p>
+<p>So, we need a compact representation with task-relevant information. We’ve already discussed how key can often be inferred from a song’s harmony and structure, so a good choice might be a chord chart (like <a href="https://www.irealpro.com/">iReal Pro</a> style). Unfortunately, we don’t yet have machines that can reliably write out a song’s chart with labeled sections and all. But we can get pretty close with a chord recognizer, which processes music, and spits out its best guess as to what chords are happening and for how long. Here’s an example of what a chord recognizer outputs on a real 60s snippet of audio:</p>
+<pre><code>0.0 8.870022675736962   N
+8.870022675736962   16.6487074829932    Ab:maj
+16.6487074829932    17.34530612244898   F#:maj
+17.34530612244898   19.481541950113378  B:maj
+19.481541950113378  21.478458049886623  A:maj
+21.478458049886623  29.83764172335601   Ab:maj
+29.83764172335601   31.90421768707483   B:maj
+31.90421768707483   33.97079365079365   A:maj
+33.97079365079365   42.32997732426304   Ab:maj
+42.32997732426304   44.489433106575966  B:maj
+44.489433106575966  46.48634920634921   A:maj
+46.48634920634921   56.88888888888889   Ab:maj
+56.88888888888889   58.978684807256236  B:maj
+58.978684807256236  60.00036281179138   C#:min</code></pre>
+<p>Obviously, we lose some information which might be important for key detection by doing this (such as the main melody). But it looks like it might still contain enough information to be useful, and it’s much more compact than the musicXML. Before feeding to an LLM, it’s probably also a good idea to apply a bit of pre-processing:</p>
+<pre><code>N 8.9s, Ab:maj 7.8s, F#:maj 0.7s, B:maj 2.1s, A:maj 2.0s, Ab:maj 8.4s, B:maj 2.1s, A:maj 2.1s, Ab:maj 8.4s, B:maj 2.2s, A:maj 2.0s, Ab:maj 10.4s, B:maj 2.1s, C#:min 1.0s</code></pre>
+</section>
+<section id="putting-it-together" class="level3">
+<h3 class="anchored" data-anchor-id="putting-it-together"><em>Putting it together</em></h3>
+<p>So, to detect the key for a given piece of music, the first step is to run the audio through a chord recognizer. For this experiment, I used one from 2019 (<span class="citation" data-cites="jiang2019large"><a href="#ref-jiang2019large" role="doc-biblioref">[3]</a></span>) because it was quick to get running from the authors’ <a href="https://github.com/music-x-lab/ISMIR2019-Large-Vocabulary-Chord-Recognition">repo</a>, and holds up pretty well against more modern approaches as evaluated by <a href="https://music-ir.org/mirex/wiki/2025:Audio_Chord_Estimation_Results">MIREX 2025</a>. I then feed the output of the chord recognizer to an LLM. The prompt looks roughly like this:</p>
+<blockquote class="blockquote">
+<p>Tell me what key you think this song is in based on its chords: <br> {CHORDS}</p>
+<p>Beware that these chords came from a chord recognizer – not a lead sheet – so there may be mistakes or confusing enharmonic spellings. Also, long songs have been trimmed to 60s in length, so the chords may end in the middle of a phrase.</p>
+</blockquote>
+<p>The full prompt is available in the <a href="https://github.com/jeffgord/llm-key-detection">GitHub Repo</a>. For the LLM, I used <code>Gemini 3.1 Flash Lite</code>, mainly because you can call it via API for free with Google’s <a href="https://aistudio.google.com/apps">AI Studio</a>. I also tested out using fancier LLMs on a small subset of data, but found that they achieved nearly identical results. This is good because using the fancy ones can get expensive, especially if you let them think.</p>
+<p>With it all put together, you can think of this pipeline like so:</p>
+<div id="fig-chord-llm" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-chord-llm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/chord-llm.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-chord-llm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: The Chord-LLM system transforms audio into a key prediction in two stages.
+</figcaption>
+</figure>
+</div>
+<p>The nice thing about this pipeline is that there is no need for re-training. The hope is that the pre-trained chord recognizer has already learned a useful representation for this task, and the LLM has seen enough music theory in its training data to process that representation effectively.</p>
+</section>
+<section id="experimental-setup" class="level3">
+<h3 class="anchored" data-anchor-id="experimental-setup"><em>Experimental Setup</em></h3>
+<p>To figure out whether this system works at all, we have to test it on tracks for which we already know the key, and compare its detections to those of other systems. I chose the relatively recently compiled FMAK dataset for this purpose <span class="citation" data-cites="wong2023fmak"><a href="#ref-wong2023fmak" role="doc-biblioref">[4]</a></span>, which includes key annotations for 5,489 songs from the Free Music Archive <span class="citation" data-cites="defferrard2017fma"><a href="#ref-defferrard2017fma" role="doc-biblioref">[5]</a></span>. I opted for the v2 annotations (compiled as part of <span class="citation" data-cites="kong2024stone"><a href="#ref-kong2024stone" role="doc-biblioref">[6]</a></span>), which correct some identified mislabelings. While it’s not perfect (more on this later), this dataset far surpasses other key detection datasets in terms of size and musical diversity (see <a href="#fig-dataset-overview" class="quarto-xref">Figure&nbsp;4</a>), so it’s better at evaluating an algorithm’s performance "in the wild." Notably, FMAK labels indicate the key for only the first 60 seconds of audio in each track. Therefore, I trimmed the tracks to 60 seconds before running through each of the key detectors.</p>
+<div id="fig-dataset-overview" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-dataset-overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-dataset-sizes" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-dataset-sizes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/dataset-sizes.svg" class="img-fluid figure-img" data-ref-parent="fig-dataset-overview">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dataset-sizes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Number of tracks in commonly used datasets with key annotations. FMAK is the only dataset with musical diversity – Beatport and Giantsteps are EDM only, ClassicalDB is classical only, GuitarSet is guitar excerpts only, and Beatles is music by The Beatles only. All datasets available from <a href="https://mirdata.readthedocs.io/en/stable/index.html"><code>mirdata</code></a>.
+</figcaption>
+</figure>
+</div>
+<div id="fig-fmak-genres" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-fmak-genres-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/fmak-genres.svg" class="img-fluid figure-img" data-ref-parent="fig-dataset-overview">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-fmak-genres-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b) Genre diversity among tracks with labeled top genre (44.2%) in FMAK.
+</figcaption>
+</figure>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dataset-overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Key detection dataset size comparison and genre diversity within FMAK.
+</figcaption>
+</figure>
+</div>
+<p>I chose two baseline detectors to compare the Chords-LLM method to. The first is the Krumhansl-Schmuckler key-finding algorithm (KS, hereafter) <span class="citation" data-cites="temperley1999whats"><a href="#ref-temperley1999whats" role="doc-biblioref">[7]</a></span>. This is a relatively simple DSP method which involves first computing how much of each note is present in the passage of music (by averaging a chromagram over time). Then, these note activations are compared to 24 key profiles, selecting the most similar profile as the detected key. The key profiles (<a href="#fig-key-profiles" class="quarto-xref">Figure&nbsp;5</a>) come from a music psychology experiment where listeners were prompted to identify how well different tones continued a sequence of notes.</p>
+<div id="fig-key-profiles" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-key-profiles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/key-profiles.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-key-profiles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: Krumhansl-Kessler key profiles for <em>C major</em> (top) and <em>C minor</em> (bottom) keys. Reproduced from <span class="citation" data-cites="temperley1999whats"><a href="#ref-temperley1999whats" role="doc-biblioref">[7]</a></span>.
+</figcaption>
+</figure>
+</div>
+<p>The other baseline is a more modern deep learning approach – the AllConv model <span class="citation" data-cites="korzeniowski2018genre"><a href="#ref-korzeniowski2018genre" role="doc-biblioref">[8]</a></span> as implemented in <code>madmom</code> <span class="citation" data-cites="madmom"><a href="#ref-madmom" role="doc-biblioref">[9]</a></span>. This is a CNN-based model designed specifically to perform well across musical genre (remember that early systems were trained/evaluated mostly on EDM music). While this model is nearly 10 years old at this point, it was considered to be the SOTA key detector until very recently. In 2025, large-scale SSL models like S-KEY <span class="citation" data-cites="kong2025skey"><a href="#ref-kong2025skey" role="doc-biblioref">[10]</a></span> have shown results on-par or just slightly better than AllConv.</p>
+</section>
+<section id="running-the-numbers" class="level3">
+<h3 class="anchored" data-anchor-id="running-the-numbers"><em>Running the numbers</em></h3>
+<p>Within the 24-class classification setup, all methods are assessed on raw accuracy, macro F1 (i.e.&nbsp;an unweighted average of F1 across classes), and MIREX score averaged across all tracks. MIREX score is a custom metric used to evaluate key predictions in the <a href="https://music-ir.org/mirex/wiki/MIREX_HOME">MIREX</a> competition. It is a musically-informed metric which penalizes musically plausible mistakes less heavily. MIREX score is calculated as follows:</p>
+<div id="tbl-mirex-score" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-mirex-score-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: MIREX key detection evaluation rubric.
+</figcaption>
+<div aria-describedby="tbl-mirex-score-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Relation to Correct Key</th>
+<th style="text-align: left;">Points</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Same</td>
+<td style="text-align: left;">1.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Perfect fifth</td>
+<td style="text-align: left;">0.5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Relative major/minor</td>
+<td style="text-align: left;">0.3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Parallel major/minor</td>
+<td style="text-align: left;">0.2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<div id="tbl-performance" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: Performance comparison of baselines with Chord-LLM methods on FMAKv2. <br> Asterisks indicate performance better than the best baseline (AllConv): <br> * <span class="math inline">\(p &lt; 0.05\)</span>, ** <span class="math inline">\(p &lt; 0.01\)</span>, *** <span class="math inline">\(p &lt; 0.001\)</span>
+</figcaption>
+<div aria-describedby="tbl-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Method</th>
+<th style="text-align: left;">Accuracy</th>
+<th style="text-align: left;">F1 (Macro)</th>
+<th style="text-align: left;">Avg. MIREX</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">KS (baseline)</td>
+<td style="text-align: left;">0.5411</td>
+<td style="text-align: left;">0.5167</td>
+<td style="text-align: left;">0.6384</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">AllConv (baseline)</td>
+<td style="text-align: left;">0.6617</td>
+<td style="text-align: left;">0.6429</td>
+<td style="text-align: left;">0.7414</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Chord-LLM</td>
+<td style="text-align: left;">0.6846**</td>
+<td style="text-align: left;">0.6617*</td>
+<td style="text-align: left;">0.7490</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Chord-LLM w/ Chroma</td>
+<td style="text-align: left;">0.6868***</td>
+<td style="text-align: left;">0.6683**</td>
+<td style="text-align: left;">0.7515</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>Results for the experiment are shown in <a href="#tbl-performance" class="quarto-xref">Table&nbsp;2</a>. Among the two baselines, AllConv performs substantially better than KS. This makes sense, since AllConv is a data-driven deep learning approach, while KS is much cruder. In particular, KS discards all timing information by averaging in an unweighted fashion across the passage to be analyzed. Timing information is obviously important to determining the harmony and thus key of a song – for instance, a note that falls on beat 1 is likely more important to the harmony than a note falling on the and of 3 – so it makes sense that KS suffers for discarding this information. In addition, the key profiles used in KS come from a rather peculiar music psychology experiment, so we shouldn’t expect them to be perfect for key detection.</p>
+<p>The performance of the LLM predicting key from the output of a chord recognizer is shown in the third row (Chord-LLM) of <a href="#tbl-performance" class="quarto-xref">Table&nbsp;2</a>. This method outperforms AllConv across all metrics. To assess the statistical significance of improvements, I used a paired McNemar test for accuracy, paired bootstrap test for F1, and paired sign-flip permutation test for MIREX score. P-values are reported with Bonferroni correction to account for running multiple tests. Comparing Chord-LLM with AllConv, the improvements in accuracy and F1 are significant (<span class="math inline">\(p = 0.002\)</span> and <span class="math inline">\(p = 0.04\)</span>, respectively), while the improvement in MIREX score is not (<span class="math inline">\(p = 0.476\)</span>). This is a somewhat interesting result – the Chord-LLM method makes substantially more correct key detections than AllConv, but achieves only a slightly increased MIREX score. We’ll see why this is later.</p>
+<p>After quickly reviewing some of the errors made by Chord-LLM, I noticed failures on tracks with harmonically ambiguous chords. For example, if a song just switches between <code>A:maj</code> and <code>E:maj</code> chords, <em>A major</em> and <em>E major</em> are both plausible keys. To help the LLM distinguish between keys in a situation like this, I tried giving it the note activations (the same ones used by KS) in addition to the chords. The fourth row (Chord-LLM w/ Chroma) of <a href="#tbl-performance" class="quarto-xref">Table&nbsp;2</a> shows the performance of this strategy. This leads to a slight improvement in all metrics. However, the increased MIREX performance still falls short of statistical significance (<span class="math inline">\(p = 0.172\)</span>).</p>
+</section>
+<section id="sec-key-distance-error-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="sec-key-distance-error-analysis"><em>Key Distance Error Analysis</em></h3>
+<p>Another musically-informed way to evaluate performance is to consider the distance (in the set theory sense) between the pitches in the predicted and true key. For example, <em>C major</em> and <em>D major</em> share all but two pitches – C and F, which are both sharp in <em>D major</em> but not in <em>C major</em> – so they have a key distance of two. One complication is dealing with mode errors, where the predicted key is major and the true key is minor, or vice versa. In this situation, I decided to treat the minor key as its relative major. This means that <em>C major</em> and <em>A minor</em> would have a key distance of 0, <em>C major</em> and <em>D minor</em> would have a key distance of 1, and so on.</p>
+<p>When humans determine the key of a passage, they may sometimes confuse the correct key for a different one which shares many pitches with the correct key (i.e.&nbsp;so the detected key and actual key have a low key distance). A reasonably competent musician will only make a high key distance mistake if there is substantial ambiguity (e.g.&nbsp;non-functional harmony or chromaticism). So for a decent key detection algorithm which makes musically plausible mistakes, we also expect to see few predictions with a high key distance from the label. This trend is largely borne out for our key detectors. Shown in <a href="#fig-key-distance-distribution-1" class="quarto-xref">Figure&nbsp;6</a> below, all algorithms exhibit fewer predictions with increasing key distance.</p>
+<div id="fig-key-distance-distribution-1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-key-distance-distribution-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/key-distance-distribution-1.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-key-distance-distribution-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: Distance between actual and predicted keys for baseline and Chord-LLM methods
+</figcaption>
+</figure>
+</div>
+<p>One notable departure from the expected downward trend is the bump at a key distance of 3 (i.e.&nbsp;all algorithms made more predictions at a distance of 3 than a distance of 2). This is best explained by the fact that parallel key errors (predicting the right tonic but the wrong mode) have a key distance of 3. The shading on the graph makes this explicit – parallel key errors make up the vast majority of key distance 3 predictions for all algorithms.</p>
+<p>Despite the fact that parallel keys share relatively few notes, there are a number of common musical techniques that make this mistake more likely. Within standard functional harmony, heavy use of parallel modal interchange might obscure the distinction between major and minor. Further, Blues music often deliberately includes both major and minor thirds, and often features dominant seventh chords rooted on the tonic. These practices can make either a <em>major</em> or <em>minor</em> label feel incomplete. The point is, music with major/minor ambiguity can trip up humans and machines alike, making parallel errors more likely.</p>
+<p>Another interesting aspect of the key distance distribution is how the AllConv model makes slightly more predictions with key distance 0 than the Chord-LLM systems. This is surprising because the Chord-LLM methods outperformed AllConv across all metrics, so we expect the Chord-LLM methods to make more correct predictions. Remember, though, that predictions with key distance 0 includes relative key errors. So while the AllConv model does indeed make more predictions with key distance 0, more of these are relative key errors compared to the predictions made by the Chord-LLM systems.</p>
+<p>This analysis helps resolve the tension from looking just at the metrics (<em>why do the Chord-LLM methods show a significant increase in accuracy, but only a slight increase in MIREX score, over AllConv?</em>). Since MIREX penalizes relative key errors less heavily than other errors, AllConv’s MIREX score is buoyed by its skew towards relative key errors. Even though the Chord-LLM method makes more correct predictions, its MIREX score is only slightly better than AllConv because it makes few relative key errors (and actually makes substantially more parallel key errors than AllConv).</p>
+</section>
+<section id="a-hybrid-system" class="level3">
+<h3 class="anchored" data-anchor-id="a-hybrid-system"><em>A hybrid system</em></h3>
+<p>We can capitalize on the fact that AllConv and the Chord-LLM systems make different kinds of errors to develop a hybrid method that performs better than either of the systems alone. Since Chord-LLM w/ Chroma is the strongest system considered so far, we’ll use that as the base (returning its predictions most of the time). However, we know the Chord-LLM w/ Chroma is liable to make parallel key errors. So we’d like to be able to detect when Chord-LLM w/ Chroma will make this error, and use the AllConv prediction instead.</p>
+<p>A key insight is that the predictions themselves can be used to detect a parallel key error. If both Chord-LLM w/ Chroma and AllConv predict the same tonic, that’s a strong signal that the predicted tonic is correct. Then, either both systems also predicted the same quality, in which case it doesn’t matter which prediction you choose as the final output. Or, the predicted modes differ. Since we’ve already established that the tonic is likely correct, we’d do better to choose AllConv’s prediction, since it makes fewer parallel key errors. Note that this isn’t a perfect detector of parallel key errors – it’s possible that occasionally the two systems predict the same tonic, but AllConv is actually making a parallel key error. As a heuristic, though, it’s decent enough.</p>
+<div id="tbl-hybrid-performance" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-hybrid-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: Performance comparison of AllConv, Chord-LLM w/ Chroma, and hybrid systems on FMAKv2. Both hybrid methods achieve statistically significant improvements across all metrics (<span class="math inline">\(p &lt; 0.001\)</span>), compared individually to AllConv and Chord-LLM w/ Chroma.
+</figcaption>
+<div aria-describedby="tbl-hybrid-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Method</th>
+<th style="text-align: left;">Accuracy</th>
+<th style="text-align: left;">F1 (Macro)</th>
+<th style="text-align: left;">Avg. MIREX</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">AllConv</td>
+<td style="text-align: left;">0.6617</td>
+<td style="text-align: left;">0.6429</td>
+<td style="text-align: left;">0.7414</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Chord-LLM w/ Chroma</td>
+<td style="text-align: left;">0.6868</td>
+<td style="text-align: left;">0.6683</td>
+<td style="text-align: left;">0.7515</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Hybrid (Parallel Correction Only)</td>
+<td style="text-align: left;">0.7091</td>
+<td style="text-align: left;">0.6878</td>
+<td style="text-align: left;">0.7700</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Hybrid (Threshold 0.5)</td>
+<td style="text-align: left;">0.7151</td>
+<td style="text-align: left;">0.6947</td>
+<td style="text-align: left;">0.7760</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p><a href="#tbl-hybrid-performance" class="quarto-xref">Table&nbsp;3</a> shows the performance of this system in the third row, with the metrics of the individual component systems reproduced in the first two rows for comparison. This hybrid system outperforms both AllConv and Chord-LLM w/ Chroma, with statistically significant improvements in all metrics (<span class="math inline">\(p &lt; 0.001\)</span> ) when compared to the predictions output by each individual system. Additionally, <a href="#fig-key-distance-distribution-2" class="quarto-xref">Figure&nbsp;7</a> shows the same key distance distribution plot from before. As we hoped for, the hybrid system achieves the best of both worlds – few relative key errors like Chord-LLM w/ Chroma, and few parallel key errors like AllConv.</p>
+<div id="fig-key-distance-distribution-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-key-distance-distribution-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/key-distance-distribution-2.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-key-distance-distribution-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: Distance between actual and predicted keys for AllConv, Chord-LLM w/ Chroma, and Hybrid methods.
+</figcaption>
+</figure>
+</div>
+<p>There are other situations where it might make sense to prefer AllConv’s predictions, too. Consider a song which is just one person singing alone. There’s no harmony here, so the chord recognizer would just output <code>N 60s</code> (i.e.&nbsp;no chord detected). Acting on this output, the LLM is just guessing (though the added Chroma profiles probably help a bit). In this situation, we’d prefer to go with AllConv’s prediction, since it doesn’t rely merely on harmony.</p>
+<p>I tried out a few different ways of dealing with this situation. One way is to have the LLM spit out a confidence score along with its key prediction, and use the AllConv prediction when the LLM’s confidence is low. However, I found that a simpler method achieved better results. For each song, calculate the proportion of the total duration for which the chord is <code>N</code>. When this proportion is above some threshold, use AllConv’s prediction instead. Experimentally, I determined the best threshold to be around 0.5.</p>
+<p>Here’s pseudo-code that lays out the logic behind this hybrid system a bit more succinctly:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> hybrid_detect_key(audio):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Run the audio through AllConv</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  allconv_key <span class="op">=</span> AllConv(audio)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># These next two lines constitute the chord-LLM system</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  chords <span class="op">=</span> ChordRecognizer(audio)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  chord_LLM_key <span class="op">=</span> LLM(chords)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Decision logic</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> proportion_N(chords) <span class="op">&gt;=</span> <span class="fl">0.5</span>:</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> allconv_key</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">elif</span> same_tonic(allconv_key, chord_LLM_key):</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> allconv_key</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span>:</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> chord_LLM_key</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The fourth row of <a href="#tbl-hybrid-performance" class="quarto-xref">Table&nbsp;3</a> above shows the performance of this system. It achieves a small, but noticeable performance improvement over the hybrid system which targets parallel errors only. If I were choosing a key detection system to deploy in the wild, I’d choose this one based on its metrics. At this point, however, the hybrid system is highly optimized using insights gained from this specific dataset. So it might be best to confirm that these results hold on a validation set before deployment.</p>
+</section>
+<section id="a-musically-informed-error-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="a-musically-informed-error-analysis"><em>A musically-informed error analysis</em></h3>
+<p>Still, the best system only gets the key correct about 72% of the time. That’s surprisingly poor performance for a task that doesn’t seem <em>that</em> challenging. To get a better sense of what’s going on here, I took a random sample of tracks which the best system predicted incorrectly, and listened carefully to see what went wrong:</p>
+<div id="tbl-hybrid-errors" class="quarto-float quarto-figure quarto-figure-center anchored" data-tbl-colwidths="[11,11,11,60,7]">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-hybrid-errors-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4: Qualitative breakdown of errors made by the best hybrid system. <br> 🤖 = Genuine system mistake, 🏷️ = Mislabeling, 👀 = Label (even if corrected) doesn’t tell the whole story
+</figcaption>
+<div aria-describedby="tbl-hybrid-errors-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 60%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Track ID</th>
+<th style="text-align: left;">Actual</th>
+<th style="text-align: left;">Predicted</th>
+<th style="text-align: left;">Possible Explanation</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">1920</td>
+<td style="text-align: left;">G major</td>
+<td style="text-align: left;">C major</td>
+<td style="text-align: left;">The chord representation is ambiguous – all the chords belong to both G and C major. Unfortunately, the LLM chose the wrong one. AllConv gets this one correct.</td>
+<td style="text-align: left;">🤖</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1942</td>
+<td style="text-align: left;">F minor</td>
+<td style="text-align: left;">F♯ major</td>
+<td style="text-align: left;">The song is basically just alternating between G♭ and F power chords. To me, the F sounds a little bit more like home, but one could argue for either.</td>
+<td style="text-align: left;">👀</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">4686</td>
+<td style="text-align: left;">G major</td>
+<td style="text-align: left;">F♯ minor</td>
+<td style="text-align: left;">The tonic is clearly F♯ (which the hybrid system chooses correctly), so this seems to be mislabeled. However, the quality is undetermined and vague – I would prefer <em>major</em> if forced to choose.</td>
+<td style="text-align: left;">🏷️ 👀</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">5078</td>
+<td style="text-align: left;">E major</td>
+<td style="text-align: left;">D major</td>
+<td style="text-align: left;">This is a pretty complex song where the A section is sort of E7 bluesy (with some chromaticism) and the B section is a non-functional trip between <code>A:maj</code>, <code>C:maj</code>, and <code>E:min</code>. Neither AllConv nor the LLM gets it right.</td>
+<td style="text-align: left;">🤖</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">6460</td>
+<td style="text-align: left;">B minor</td>
+<td style="text-align: left;">A major</td>
+<td style="text-align: left;">This is essentially in B dorian. While the <em>B minor</em>-vibe dominates, the chords are technically diatonic to <em>A major</em>, so the LLM picks that over <em>B minor</em>. AllConv gets this one correct.</td>
+<td style="text-align: left;">🤖</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">6669</td>
+<td style="text-align: left;">C major</td>
+<td style="text-align: left;">C minor</td>
+<td style="text-align: left;">This song is really just a C drone with some chromatic (kinda lydian) stuff on top. I don’t think <em>C major</em> tells the whole story here, but I think it’s more correct than the hybrid’s <em>C minor</em>. The lack of clear harmony means the hybrid system uses AllConv’s prediction, but it doesn’t have much to go on.</td>
+<td style="text-align: left;">👀</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">9866</td>
+<td style="text-align: left;">D major</td>
+<td style="text-align: left;">B♭ major</td>
+<td style="text-align: left;">The recording is pretty noisy, and the harmony is quite non-functional with one section loosely floating about <code>Db:maj</code> and another grounded in <code>Bb:maj</code>. The <em>D major</em> label is not a good choice here, though I would be hard pressed to say what is.</td>
+<td style="text-align: left;">🏷️ 👀</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">10415</td>
+<td style="text-align: left;">E♭ major</td>
+<td style="text-align: left;">D♭ major</td>
+<td style="text-align: left;">This is a straight up mislabeling. AllConv, the LLM, and I all agree that <em>D♭ major</em> is the key here.</td>
+<td style="text-align: left;">🏷️</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">12000</td>
+<td style="text-align: left;">F♯ major</td>
+<td style="text-align: left;">B major</td>
+<td style="text-align: left;">This is basically someone noodling on an electric piano in a <em>B major</em>-ish vibe. The label is wrong.</td>
+<td style="text-align: left;">🏷️</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">16120</td>
+<td style="text-align: left;">A♭ minor</td>
+<td style="text-align: left;">E♭ major</td>
+<td style="text-align: left;">The tuning is a bit "free" on this one since the only instrument is voice. I don’t love the label because I think the tonic is closer to G than A♭. Regardless, the chord representation alternates between <code>G:maj</code> and <code>Eb:maj</code>, which is unfortunate since <code>G:min</code> is a better choice here (the third is underspecified). This throws off the LLM and AllConv too.</td>
+<td style="text-align: left;">🤖</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>This analysis is pretty informative. First off, there are some legitimate failures of the hybrid system. 2/10 errors occur because the chord representation is ambiguous, and the AllConv prediction was actually correct. I experimented with trying to detect ambiguous harmony to use the AllConv prediction instead in these situations. Unfortunately, I found that too many songs have ambiguous harmony, and that over-relying on AllConv causes performance to decrease.</p>
+<p>Another trend is the presence of annotation errors (4/10 tracks). This isn’t a knock on the dataset curators – it’s a huge task to listen to over 5,000 songs and determine their keys. But just something to be aware of. It’s possible that fixing the mislabelings might result in improvements to metrics reported in previous sections, but I doubt that it would change which system performs best comparatively.</p>
+<p>Even when I agree with the label, there are still situations where assigning a label feels a bit problematic, such as songs with non-functional harmony, or which lack any clear harmony at all. For example, track 6669 (which you can listen to below) is centered around a C drone. <em>C major</em> is probably the best label when constrained to the 24-class setup, but it’s not really a good description of this passage’s <em>tonality</em>. Labeling this as <em>C major</em> implies a lot more harmonic coherence than is present.</p>
+<figure style="margin-top: 1.5em;" class="figure">
+<audio controls="" src="audio/track-6669.mp3" style="display: block; margin: 1em auto;">
+Your browser does not support the audio element.
+</audio>
+<figcaption>
+Audio 1: The first 60 seconds of track 6669 from FMAK.
+</figcaption>
+</figure>
+</section>
+<section id="wrapping-up" class="level3">
+<h3 class="anchored" data-anchor-id="wrapping-up"><em>Wrapping up</em></h3>
+<p>Since the best key detector examined above still makes genuine mistakes from time to time, it’s probably possible to push the performance of key detectors a little higher. But I think this is a good place to leave it for now. We saw that an LLM that processes a song’s chords (and chroma) performs better than a task-optimized deep learning method, and that a hybrid system combining both methods performs even better still. The strength of the LLM method is likely due to chords being a good representation for inferring key. However, this isn’t true for every song, and having a layer closer to the audio can help in these situations, which is why the hybrid system out-performs each system alone.</p>
+<p>If someone else wanted to continue this work, they might consider some of the following directions:</p>
+<ul>
+<li><strong>Better subsystems:</strong> I stuck with the same chord recognizer for the whole experiment, mainly because it was easy to get up-and-running. But it’s not even the best-performing one these days. Also, I used a relatively cheap and non-frontier LLM. As mentioned above, I did a quick test on a subset of data using a more powerful model, but found that the performance was nearly identical. Still, you could maybe eke out slightly better metrics by using a better chord recognizer and stronger LLM with very high reasoning.</li>
+<li><strong>Other features:</strong> chord charts make sense as a feature representation for LLMs. But the latest frontier models are quite powerful, and could probably handle even more complex representations of music. Something like a MIDI representation of the main melody would complement the chord representation well, and it’s worth testing whether this might further improve performance.</li>
+<li><strong>Compute efficiency:</strong> LLMs are heavy duty, and are probably overkill for this task. A simpler ML method might be enough to infer key from chords. And a whole lot cheaper. I think it would be interesting to see the gap between a strong ML method and the LLM. This sort of measures the utility of the LLM’s explicit music theory knowledge and edge-case resistance – i.e.&nbsp;what would be challenging for a traditional ML method to learn from a small, labeled dataset.</li>
+</ul>
+<p>However, this project is just as much about key detectors, as it is about the key detection task itself. There’s plenty of music that doesn’t fit the 24-class classification setup well. This could be for a number of reasons – there’s a tonic but the quality isn’t exactly major or minor, the harmony is highly chromatic or non-functional, there’s no clear harmony at all, there’s bi-tonality, and so on. This list doesn’t even include the most-complicating factor of all: key shifts. The FMAK dataset has been carefully curated to include (mostly) songs with a single key. But this just isn’t realistic for music <em>in the wild.</em></p>
+<p>This provides another explanation for the low popularity of key detection among MIR practitioners. Since the task doesn’t make sense for a lot of music, key detection just isn’t that useful. One answer to this is just to avoid working on key detection. But we could also try to improve the task definition – include a more expansive set of possible key qualities, annotate full songs with key shifts marked, allow for the possibility of multiple keys at once, etc.. I’ll leave that for the next project, though.</p>
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="ref-pmlr-v303-carone26a" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">B. J. Carone, I. R. Roman, and P. Ripollés, <span>“LLMs can read music, but struggle to hear it. An evaluation of core music perception tasks,”</span> in <em>Proceedings of machine learning research</em>, D. Herremans, K. Bhandari, A. Roy, S. Colton, and M. Barthet, Eds., in Proceedings of machine learning research, vol. 303. PMLR, 2026, pp. 1–27. Available: <a href="https://proceedings.mlr.press/v303/carone26a.html">https://proceedings.mlr.press/v303/carone26a.html</a></div>
+</div>
+<div id="ref-morais2026modality" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">G. Morais and M. Fuentes, <span>“Investigating modality contribution in audio LLMs for music,”</span> in <em>ICASSP 2026 - 2026 IEEE international conference on acoustics, speech and signal processing (ICASSP)</em>, Barcelona, Spain: IEEE, 2026, pp. 3496–3500. doi: <a href="https://doi.org/10.1109/ICASSP55912.2026.11463350">10.1109/ICASSP55912.2026.11463350</a>.</div>
+</div>
+<div id="ref-jiang2019large" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">J. Jiang, K. Chen, W. Li, and G. Xia, <span>“Large-vocabulary chord transcription via chord structure decomposition,”</span> in <em>Proceedings of the 20th international society for music information retrieval conference (ISMIR 2019)</em>, Delft, The Netherlands, 2019, pp. 644–651. Available: <a href="https://archives.ismir.net/ismir2019/paper/000078.pdf">https://archives.ismir.net/ismir2019/paper/000078.pdf</a></div>
+</div>
+<div id="ref-wong2023fmak" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">S. Wong and G. Hernandez, <span>“FMAK: A dataset of key and mode annotations for the free music archive,”</span> in <em>Late breaking demo, proceedings of the 24th international society for music information retrieval conference (ISMIR 2023)</em>, Milan, Italy, 2023. Available: <a href="https://ismir2023program.ismir.net/lbd_335.html">https://ismir2023program.ismir.net/lbd_335.html</a></div>
+</div>
+<div id="ref-defferrard2017fma" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">M. Defferrard, K. Benzi, P. Vandergheynst, and X. Bresson, <span>“FMA: A dataset for music analysis,”</span> in <em>Proceedings of the 18th international society for music information retrieval conference (ISMIR 2017)</em>, Suzhou, China, 2017. Available: <a href="https://archives.ismir.net/ismir2017/paper/000075.pdf">https://archives.ismir.net/ismir2017/paper/000075.pdf</a></div>
+</div>
+<div id="ref-kong2024stone" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">Y. Kong, V. Lostanlen, G. Meseguer-Brocal, S. Wong, M. Lagrange, and R. Hennequin, <span>“STONE: Self-supervised tonality estimator,”</span> <em>Proceedings of International Society for Music Information Retrieval Conference (ISMIR 2024)</em>, 2024.</div>
+</div>
+<div id="ref-temperley1999whats" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">D. Temperley, <span>“What’s key for key? The krumhansl-schmuckler key-finding algorithm reconsidered,”</span> <em>Music Perception</em>, vol. 17, no. 1, pp. 65–100, 1999, Available: <a href="https://davidtemperley.com/wp-content/uploads/2015/11/temperley-mp99.pdf">https://davidtemperley.com/wp-content/uploads/2015/11/temperley-mp99.pdf</a></div>
+</div>
+<div id="ref-korzeniowski2018genre" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">F. Korzeniowski and G. Widmer, <span>“Genre-agnostic key classification with convolutional neural networks,”</span> in <em>Proceedings of the 19th international society for music information retrieval conference (ISMIR 2018)</em>, Paris, France, 2018. Available: <a href="https://ismir2018.ircam.fr/doc/pdfs/7_Paper.pdf">https://ismir2018.ircam.fr/doc/pdfs/7_Paper.pdf</a></div>
+</div>
+<div id="ref-madmom" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">S. Böck, F. Korzeniowski, J. Schlüter, F. Krebs, and G. Widmer, <span>“<span class="nocase">madmom: a new Python Audio and Music Signal Processing Library</span>,”</span> in <em>Proceedings of the 24th ACM international conference on multimedia</em>, Amsterdam, The Netherlands, Oct. 2016, pp. 1174–1178. doi: <a href="https://doi.org/10.1145/2964284.2973795">10.1145/2964284.2973795</a>.</div>
+</div>
+<div id="ref-kong2025skey" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">Y. Kong, G. Meseguer-Brocal, V. Lostanlen, M. Lagrange, and R. Hennequin, <span>“S-KEY: Self-supervised learning of major and minor keys from audio,”</span> in <em>ICASSP 2025 - 2025 IEEE international conference on acoustics, speech and signal processing (ICASSP)</em>, IEEE, 2025. doi: <a href="https://doi.org/10.1109/ICASSP49660.2025.10890222">10.1109/ICASSP49660.2025.10890222</a>.</div>
+</div>
+</div></section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>You might point out that we have strong multimodal models nowadays, which actually do process audio. Unfortunately, it turns out that recent multimodal LLMs are pretty bad at MIR (see <span class="citation" data-cites="pmlr-v303-carone26a"><a href="#ref-pmlr-v303-carone26a" role="doc-biblioref">[1]</a></span> and <span class="citation" data-cites="morais2026modality"><a href="#ref-morais2026modality" role="doc-biblioref">[2]</a></span>). And since it’s expensive to process audio tokens, I just didn’t think it worth my time/money to focus on. Still, an interesting project might be to benchmark multimodal LLMs on this task (or similar MIR tasks), and track their improvement over time.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
