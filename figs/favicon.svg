@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    g { stroke: #2f2a44; }
+    @media (prefers-color-scheme: dark) {
+      g { stroke: #d8d4e6; }
+    }
+  </style>
+  <g stroke-width="3.2" stroke-linecap="round">
+    <line x1="16" y1="7" x2="16" y2="25"/>
+    <line x1="8.21" y1="11.5" x2="23.79" y2="20.5"/>
+    <line x1="23.79" y1="11.5" x2="8.21" y2="20.5"/>
+  </g>
+</svg>
