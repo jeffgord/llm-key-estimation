@@ -43,7 +43,7 @@ Because key detection is underexplored, the available datasets are fairly small 
 
 ### *Using LLMs for Key Detection*
 
-One way to deal with a lack of labeled data is to rely in part on a foundation model, which trains on a large corpus of unlabeled data in a self-supervised fashion. The hope is that this process encourages your model to learn generalizable representations, which can then be fine-tuned for many different tasks with just a small amount of labeled data. Indeed, a pre-trained music foundation model like MERT would probably work well for key detection.
+One way to deal with a lack of labeled data is to rely in part on a foundation model, which trains on a large corpus of unlabeled data in a self-supervised fashion. The hope is that this process encourages your model to learn generalizable representations, which can then be fine-tuned for many different tasks with just a small amount of labeled data. Indeed, a pre-trained music foundation model like MERT @li2024mert would probably work well for key detection.
 
 LLMs are another kind of foundation model which have been *quite* popular lately. And with so much money poured into their development by frontier labs, they should be good at lots of different tasks. But the problem with using LLMs for music tasks is that they operate on text, not audio.[^text-not-audio] So to use them for key detection, we need some way to represent music as text.
 
