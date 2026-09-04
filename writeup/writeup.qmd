@@ -8,6 +8,8 @@ format:
   html:
     include-in-header:
       - text: <link rel="icon" type="image/svg+xml" href="figs/favicon.svg">
+resources:
+  - audio/
 ---
 
 <style>
